@@ -32,6 +32,9 @@ public:
 	}
 	void RollPossibleEnchant(Player* player, Item* item)
 	{
+		double roll1pct = sConfigMgr->GetFloatDefault("RandomEnchants.Roll1Percentage", 30.0);
+		double roll2pct = sConfigMgr->GetFloatDefault("RandomEnchants.Roll2Percentage", 35.0);
+		double roll3pct = sConfigMgr->GetFloatDefault("RandomEnchants.Roll3Percentage", 40.0);
 		uint32 Quality = item->GetTemplate()->Quality;
 		uint32 Class = item->GetTemplate()->Class;
 
@@ -45,17 +48,17 @@ public:
 		int slotRand[3] = { -1, -1, -1 };
 		uint32 slotEnch[3] = { 0, 1, 5 };
 		double roll1 = rand_chance();
-		if (roll1 >= 70.0)
+		if (roll1 >= 100 - roll1pct)
 			slotRand[0] = getRandEnchantment(item);
 		if (slotRand[0] != -1)
 		{
 			double roll2 = rand_chance();
-			if (roll2 >= 65.0)
+			if (roll2 >= 100 - roll2pct)
 				slotRand[1] = getRandEnchantment(item);
 			if (slotRand[1] != -1)
 			{
 				double roll3 = rand_chance();
-				if (roll3 >= 60.0)
+				if (roll3 >= 100 - roll3pct)
 					slotRand[2] = getRandEnchantment(item);
 			}
 		}

@@ -40,3 +40,13 @@ RandomEnchants.OnCreate=1
 
 RandomEnchants.OnQuestReward=1
 
+#
+#     RandomEnchants.Roll1Percentage
+#     RandomEnchants.Roll2Percentage
+#     RandomEnchants.Roll3Percentage
+#        Each of the above toggles how the chance of getting each role
+#        Default:     1
+
+RandomEnchants.Roll1Percentage=30.0
+RandomEnchants.Roll2Percentage=35.0
+RandomEnchants.Roll3Percentage=40.0
