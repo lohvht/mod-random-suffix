@@ -41,12 +41,21 @@ RandomEnchants.OnCreate=1
 RandomEnchants.OnQuestReward=1
 
 #
-#     RandomEnchants.Roll1Percentage
-#     RandomEnchants.Roll2Percentage
-#     RandomEnchants.Roll3Percentage
-#        Each of the above toggles how the chance of getting each role
-#        Default:     1
+#     RandomEnchants.RollPercentage.1
+#     RandomEnchants.RollPercentage.2
+#     RandomEnchants.RollPercentage.3
+#     RandomEnchants.RollPercentage.4
+#     RandomEnchants.RollPercentage.5
+#        Each of the above toggles how the chance of getting each roll
+#        This goes up to 5 rolls for items that can be enchanted 5 times.
+#        Default:     30.0
+#                     35.0
+#                     40.0
+#                     45.0
+#                     50.0
 
-RandomEnchants.Roll1Percentage=30.0
-RandomEnchants.Roll2Percentage=35.0
-RandomEnchants.Roll3Percentage=40.0
+RandomEnchants.RollPercentage.1=30.0
+RandomEnchants.RollPercentage.2=35.0
+RandomEnchants.RollPercentage.3=40.0
+RandomEnchants.RollPercentage.4=45.0
+RandomEnchants.RollPercentage.5=50.0

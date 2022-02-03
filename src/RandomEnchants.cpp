@@ -5,6 +5,22 @@
 #include "Player.h"
 #include "Configuration/Config.h"
 #include "Chat.h"
+#include "Item.h"
+
+// Our random enchants can go up to 5 slots and they occupy the same slots as the stats given from
+// random props. i.e. If there are 2 slots occupied from random properties, then we have a max of
+// 5 - 2 = 3 slots. 
+#define MAX_RAND_ENCHANT_SLOTS 5
+
+double default_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {30.0, 35.0, 40.0, 45.0, 50.0};
+
+uint32 default_allowed_rand_enchant_slots[MAX_RAND_ENCHANT_SLOTS] = {
+	PROP_ENCHANTMENT_SLOT_4,
+	PROP_ENCHANTMENT_SLOT_3,
+	PROP_ENCHANTMENT_SLOT_2,
+	PROP_ENCHANTMENT_SLOT_1,
+	PROP_ENCHANTMENT_SLOT_0,
+};
 
 class RandomEnchantsPlayer : public PlayerScript{
 public:
@@ -32,9 +48,6 @@ public:
 	}
 	void RollPossibleEnchant(Player* player, Item* item)
 	{
-		double roll1pct = sConfigMgr->GetFloatDefault("RandomEnchants.Roll1Percentage", 30.0);
-		double roll2pct = sConfigMgr->GetFloatDefault("RandomEnchants.Roll2Percentage", 35.0);
-		double roll3pct = sConfigMgr->GetFloatDefault("RandomEnchants.Roll3Percentage", 40.0);
 		uint32 Quality = item->GetTemplate()->Quality;
 		uint32 Class = item->GetTemplate()->Class;
 
@@ -45,42 +58,23 @@ public:
 			return;
         }
 
-		int slotRand[3] = { -1, -1, -1 };
-		uint32 slotEnch[3] = { 0, 1, 5 };
-		double roll1 = rand_chance();
-		if (roll1 >= 100 - roll1pct)
-			slotRand[0] = getRandEnchantment(item);
-		if (slotRand[0] != -1)
+		std::vector<std::pair<uint32, EnchantmentSlot>> rolledEnchants = GetRolledEnchants(item);
+		int numActualEnchants = 0;
+		for (auto const& [enchID, enchSlot] : rolledEnchants)
 		{
-			double roll2 = rand_chance();
-			if (roll2 >= 100 - roll2pct)
-				slotRand[1] = getRandEnchantment(item);
-			if (slotRand[1] != -1)
+			if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
 			{
-				double roll3 = rand_chance();
-				if (roll3 >= 100 - roll3pct)
-					slotRand[2] = getRandEnchantment(item);
-			}
-		}
-		for (int i = 0; i < 2; i++)
-		{
-			if (slotRand[i] != -1)
-			{
-				if (sSpellItemEnchantmentStore.LookupEntry(slotRand[i]))//Make sure enchantment id exists
-				{
-					player->ApplyEnchantment(item, EnchantmentSlot(slotEnch[i]), false);
-					item->SetEnchantment(EnchantmentSlot(slotEnch[i]), slotRand[i], 0, 0);
-					player->ApplyEnchantment(item, EnchantmentSlot(slotEnch[i]), true);
-				}
+				player->ApplyEnchantment(item, enchSlot, false);
+				item->SetEnchantment(enchSlot, enchID, 0, 0);
+				player->ApplyEnchantment(item, enchSlot, true);
+				numActualEnchants++;
 			}
 		}
 		ChatHandler chathandle = ChatHandler(player->GetSession());
-		if (slotRand[2] != -1)
-			chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 3 |rrandom enchantments!", item->GetTemplate()->Name1.c_str());
-		else if(slotRand[1] != -1)
-			chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 2 |rrandom enchantments!", item->GetTemplate()->Name1.c_str());
-		else if(slotRand[0] != -1)
-			chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 1 |rrandom enchantment!", item->GetTemplate()->Name1.c_str());
+		if (numActualEnchants > 0)
+		{
+			chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 %d |rrandom enchantments!", item->GetTemplate()->Name1.c_str(), numActualEnchants);
+		}
 	}
 	int getRandEnchantment(Item* item)
 	{
@@ -136,6 +130,53 @@ public:
 
 		QueryResult qr = WorldDatabase.Query("SELECT enchantID FROM item_enchantment_random_tiers WHERE tier='{}' AND exclusiveSubClass=NULL AND class='{}' OR exclusiveSubClass='{}' OR class='ANY' ORDER BY RAND() LIMIT 1", tier, ClassQueryString, item->GetTemplate()->SubClass);
 		return qr->Fetch()[0].Get<uint32>();
+	}
+	std::vector<std::pair<uint32, EnchantmentSlot>> GetRolledEnchants(Item* item)
+	{
+		std::vector<EnchantmentSlot> availableSlots = GetAvailableEnchantSlots(item);
+		std::vector<std::pair<uint32, EnchantmentSlot>> rolledEnchants;
+		std::size_t i = 0;
+		std::vector<std::string> keys = sConfigMgr->GetKeysByString("RandomEnchants.RollPercentage.");
+		for (std::string const& rollPctKey : keys)
+		{
+			if (i >= MAX_RAND_ENCHANT_SLOTS || i >= availableSlots.size())
+			{
+				// cannot go beyond the maximum random enchant slots or the number of available slots available
+				break;
+			}
+			float rollpct = sConfigMgr->GetOption<float>(rollPctKey, default_enchant_pcts[i]);
+			float roll = (float)rand_chance();
+			if (roll + rollpct < 100.0)
+			{
+				// If roll was not successful, we break, no more attempted rolls beyond this;
+				break;
+			}
+			int randEnch = getRandEnchantment(item);
+			if (randEnch <= 0)
+			{
+				// get rand enchant ID failed for some reason, should not happen, we still just continue and try to get
+				// another one.
+				continue;
+			}
+			rolledEnchants.push_back(std::make_pair((uint32)randEnch, availableSlots[i]));
+			i++;
+		}
+		return rolledEnchants;
+	}
+	std::vector<EnchantmentSlot> GetAvailableEnchantSlots(Item* item)
+	{
+		std::vector<EnchantmentSlot> availableSlots;
+		for (int i = 0; i < MAX_RAND_ENCHANT_SLOTS; i++)
+		{
+			EnchantmentSlot slot = EnchantmentSlot(default_allowed_rand_enchant_slots[i]);
+			if (uint32 enchId = item->GetEnchantmentId(slot))
+			{
+				// Do not add slots that have an enchantment slot
+				continue;
+			}
+			availableSlots.push_back(slot);
+		}
+		return availableSlots;
 	}
 };
 
