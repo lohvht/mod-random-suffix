@@ -152,10 +152,11 @@ public:
 				break;
 			}
 			int randEnch = getRandEnchantment(item);
-			if (randEnch <= 0)
+			while (randEnch <= 0)
 			{
 				// get rand enchant ID failed for some reason, should not happen, we still just continue and try to get
 				// another one.
+                                randEnch = getRandEnchantment(item);
 				continue;
 			}
 			rolledEnchants.push_back(std::make_pair((uint32)randEnch, availableSlots[i]));
