@@ -13,6 +13,13 @@
 RandomEnchants.AnnounceOnLogin=1
 
 #
+#     RandomEnchants.Debug
+#        Print debug logs
+#        Default:    0
+
+RandomEnchants.Debug=0
+
+#
 #     RandomEnchants.OnLoginMessage
 #        Message to display on login(Only applies if AnnounceOnLogin is enabled)
 #        Default:    "This server is running a RandomEnchants Module."
