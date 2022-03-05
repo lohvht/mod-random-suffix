@@ -7,6 +7,48 @@
 #include "Chat.h"
 #include "Item.h"
 
+// DEFAULT VALUES
+
+// Our random enchants can go up to 5 slots and they occupy the same slots as the stats given from
+// random props. i.e. If there are 2 slots occupied from random properties, then we have a max of
+// 5 - 2 = 3 slots. 
+#define MAX_RAND_ENCHANT_SLOTS 5
+
+double default_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {30.0, 35.0, 40.0, 45.0, 50.0};
+
+bool default_announce_on_log = true;
+bool default_debug = false;
+bool default_on_loot = true;
+bool default_on_create = true;
+bool default_on_quest_reward = true;
+bool default_use_new_random_enchant_system = true;
+std::string default_login_message ="This server is running a RandomEnchants Module.";
+
+std::vector<EnchantmentSlot> default_allowed_rand_enchant_slots = {
+    PROP_ENCHANTMENT_SLOT_4,
+    PROP_ENCHANTMENT_SLOT_3,
+    PROP_ENCHANTMENT_SLOT_2,
+    PROP_ENCHANTMENT_SLOT_1,
+    PROP_ENCHANTMENT_SLOT_0,
+};
+
+// CONFIGURATION
+
+double config_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {
+    default_enchant_pcts[0],
+    default_enchant_pcts[1],
+    default_enchant_pcts[2],
+    default_enchant_pcts[3],
+    default_enchant_pcts[4],
+};
+bool config_announce_on_log = default_announce_on_log;
+bool config_debug = default_debug;
+bool config_on_loot = default_on_loot;
+bool config_on_create = default_on_create;
+bool config_on_quest_reward = default_on_quest_reward;
+bool config_use_new_random_enchant_system = default_use_new_random_enchant_system;
+std::string config_login_message = default_login_message;
+
 // UTILS
 enum EnchantCategory
 {
@@ -92,7 +134,6 @@ bool isItemPlayerClassPreference(Player* player, Item* item)
     {
         return player->CanUseItem(item->GetTemplate()) == EQUIP_ERR_OK;
     }
-    uint32 itemSkill = item->GetSkill();
     if (item->GetTemplate()->Class == ITEM_CLASS_ARMOR)
     {
         std::vector<uint32> armorSubclasses;
@@ -436,48 +477,6 @@ uint32 getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
 // END UTILS
 
 // MAIN GET ROLL ENCHANT FUNCTIONS
-
-// DEFAULT VALUES
-
-// Our random enchants can go up to 5 slots and they occupy the same slots as the stats given from
-// random props. i.e. If there are 2 slots occupied from random properties, then we have a max of
-// 5 - 2 = 3 slots. 
-#define MAX_RAND_ENCHANT_SLOTS 5
-
-double default_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {30.0, 35.0, 40.0, 45.0, 50.0};
-
-bool default_announce_on_log = true;
-bool default_debug = false;
-bool default_on_loot = true;
-bool default_on_create = true;
-bool default_on_quest_reward = true;
-bool default_use_new_random_enchant_system = true;
-std::string default_login_message ="This server is running a RandomEnchants Module.";
-
-std::vector<EnchantmentSlot> default_allowed_rand_enchant_slots = {
-    PROP_ENCHANTMENT_SLOT_4,
-    PROP_ENCHANTMENT_SLOT_3,
-    PROP_ENCHANTMENT_SLOT_2,
-    PROP_ENCHANTMENT_SLOT_1,
-    PROP_ENCHANTMENT_SLOT_0,
-};
-
-// CONFIGURATION
-
-double config_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {
-    default_enchant_pcts[0],
-    default_enchant_pcts[1],
-    default_enchant_pcts[2],
-    default_enchant_pcts[3],
-    default_enchant_pcts[4],
-};
-bool config_announce_on_log = default_announce_on_log;
-bool config_debug = default_debug;
-bool config_on_loot = default_on_loot;
-bool config_on_create = default_on_create;
-bool config_on_quest_reward = default_on_quest_reward;
-bool config_use_new_random_enchant_system = default_use_new_random_enchant_system;
-std::string config_login_message = default_login_message;
 
 int getRandomEnchantment_New(Item* item, Player* player = nullptr)
 {
