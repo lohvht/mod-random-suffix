@@ -7,6 +7,338 @@
 #include "Chat.h"
 #include "Item.h"
 
+// UTILS
+enum EnchantCategory
+{
+    ENCH_CAT_STRENGTH          = 0,  // TITLE strength users
+    ENCH_CAT_AGILITY           = 1,  // TITLE agi users
+    ENCH_CAT_INTELLECT         = 2,  // TITLE int users
+    ENCH_CAT_TANK_DEFENSE      = 3,  // TITLE tanks with defense stats
+    ENCH_CAT_TANK_SHIELD_BLOCK = 4,  // TITLE tanks that use shields // TODO: Maybe not needed with ENCH_CAT_TANK_DEFENSE if the above FIX for itemSubclass is done properly
+    ENCH_CAT_MELEE             = 5,  // TITLE uses expertise, melee damage
+    ENCH_CAT_RANGED            = 6,  // TITLE ranged dps (primarily hunter)
+    ENCH_CAT_CASTER            = 7,  // TITLE casters, mainly spell power
+    ENCH_CAT_HOLY_DMG          = 8,  // TITLE Holy damage
+    ENCH_CAT_SHADOW_DMG        = 9,  // TITLE Shadow damage
+    ENCH_CAT_FROST_DMG         = 10, // TITLE Frost damage
+    ENCH_CAT_NATURE_DMG        = 11, // TITLE Nature damage
+    ENCH_CAT_FIRE_DMG          = 12, // TITLE Fire damage
+    ENCH_CAT_ARCANE_DMG        = 13, // TITLE Arcane damage
+};
+
+uint32 getEnchantCategoryMask(std::vector<EnchantCategory> enchCategories)
+{
+    uint32 r = 0;
+    for (auto enchCat : enchCategories)
+    {
+        r |= 1 << enchCat;
+    }
+    return r;
+}
+
+bool playerHasSkillRequirementForEnchant(const Player* player, uint32 enchantID)
+{
+    if (SpellItemEnchantmentEntry const* enchantEntry = sSpellItemEnchantmentStore.LookupEntry(enchantID))
+    {
+        if (enchantEntry->requiredSkill && player->GetSkillValue(enchantEntry->requiredSkill) < enchantEntry->requiredSkillValue)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool playerHasLevelRequirementForEnchant(const Player* player, uint32 enchantID)
+{
+    if (SpellItemEnchantmentEntry const* enchantEntry = sSpellItemEnchantmentStore.LookupEntry(enchantID))
+    {
+        if (player->getLevel() < enchantEntry->requiredLevel)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// getItemPlayerLevel retrieves an item's player required level
+// It uses the item's required level if its not zero, otherwise it will rely on
+// the average required level calculated from the item template table.
+uint32 getItemPlayerLevel(Item* item)
+{
+    if (uint32 reqLevel = item->GetTemplate()->RequiredLevel)
+    {
+        return reqLevel;
+    }
+    QueryResult qr = WorldDatabase.Query(R"(select ceil(avg(RequiredLevel)) from item_template where
+ItemLevel = {}
+and class in ({},{})
+and RequiredLevel != {}
+and not (name like '%qa%' or name like '%test%' or name like '%debug%' or name like '%internal%' or name like '%demo%')
+group by ItemLevel LIMIT 1)",
+        item->GetTemplate()->ItemLevel,
+        ITEM_CLASS_WEAPON, ITEM_CLASS_ARMOR,
+        0);
+    if (!qr)
+    {
+        // If unable to query, fallback to maxlevel (NOTE: maybe would be better to default to 1 instead of max)
+        return sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    }
+    uint32 avgReqLevel = qr->Fetch()[0].Get<uint32>();
+    return avgReqLevel;
+}
+
+int getLevelOffset(Item* item, Player* player = nullptr)
+{
+    int level = 1;
+    if (player)
+    {
+        level = player->getLevel();
+    }
+    else
+    {
+        level = getItemPlayerLevel(item);
+    }
+    // level offset calculation below
+    // current_level - 5 + item_quality
+    level = level - ITEM_QUALITY_LEGENDARY + item->GetTemplate()->Quality;
+    if (level <= 0)
+    {
+        level = 1;
+    }
+    return level;
+}
+
+uint32 getPlayerEnchantCategoryMask(Player* player)
+{
+    std::vector<EnchantCategory> plrEnchCats;
+    switch (player->getClass())
+    {
+        case CLASS_WARRIOR:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+            case TALENT_TREE_WARRIOR_ARMS:
+            case TALENT_TREE_WARRIOR_FURY:
+                break;
+            case TALENT_TREE_WARRIOR_PROTECTION:
+                plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_TANK_DEFENSE, ENCH_CAT_TANK_SHIELD_BLOCK});
+                break;
+            }
+            break;
+        case CLASS_PALADIN:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER, ENCH_CAT_HOLY_DMG});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_PALADIN_HOLY:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT});
+                    break;
+                case TALENT_TREE_PALADIN_PROTECTION:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE, ENCH_CAT_TANK_DEFENSE, ENCH_CAT_TANK_SHIELD_BLOCK});
+                    break;
+                case TALENT_TREE_PALADIN_RETRIBUTION:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE});
+                    break;
+            }
+            break;
+        case CLASS_HUNTER:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_RANGED});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_HUNTER_BEAST_MASTERY:
+                case TALENT_TREE_HUNTER_MARKSMANSHIP:
+                case TALENT_TREE_HUNTER_SURVIVAL:
+                    break;
+            }
+            break;
+        case CLASS_ROGUE:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_MELEE});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_ROGUE_ASSASSINATION:
+                case TALENT_TREE_ROGUE_COMBAT:
+                case TALENT_TREE_ROGUE_SUBTLETY:
+                    break;
+            }
+            break;
+        case CLASS_PRIEST:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_PRIEST_DISCIPLINE:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_HOLY_DMG});
+                    break;
+                case TALENT_TREE_PRIEST_HOLY:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_HOLY_DMG});
+                    break;
+                case TALENT_TREE_PRIEST_SHADOW:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_SHADOW_DMG});
+                    break;
+            }
+            break;
+        case CLASS_DEATH_KNIGHT:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE, ENCH_CAT_CASTER, ENCH_CAT_SHADOW_DMG, ENCH_CAT_TANK_DEFENSE});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_DEATH_KNIGHT_BLOOD:
+                    break;
+                case TALENT_TREE_DEATH_KNIGHT_FROST:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FROST_DMG});
+                    break;
+                case TALENT_TREE_DEATH_KNIGHT_UNHOLY:
+                    break;
+            }
+            break;
+        case CLASS_SHAMAN:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_NATURE_DMG, ENCH_CAT_CASTER});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_SHAMAN_ELEMENTAL:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_MELEE});
+                    break;
+                case TALENT_TREE_SHAMAN_ENHANCEMENT:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_FIRE_DMG});
+                    break;
+                case TALENT_TREE_SHAMAN_RESTORATION:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT});
+                    break;
+            }
+            break;
+        case CLASS_MAGE:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_MAGE_ARCANE:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_ARCANE_DMG});
+                    break;
+                case TALENT_TREE_MAGE_FIRE:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FIRE_DMG});
+                    break;
+                case TALENT_TREE_MAGE_FROST:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FROST_DMG});
+                    break;
+            }
+            break;
+        case CLASS_WARLOCK:
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_SHADOW_DMG});
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_WARLOCK_AFFLICTION:
+                    break;
+                case TALENT_TREE_WARLOCK_DEMONOLOGY:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FIRE_DMG});
+                    break;
+                case TALENT_TREE_WARLOCK_DESTRUCTION:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FIRE_DMG});
+                    break;
+            }
+            break;
+        case CLASS_DRUID:
+            switch (player->GetSpec(player->GetActiveSpec()))
+            {
+                case TALENT_TREE_DRUID_BALANCE:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_NATURE_DMG, ENCH_CAT_ARCANE_DMG});
+                    break;
+                case TALENT_TREE_DRUID_FERAL_COMBAT:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_TANK_DEFENSE, ENCH_CAT_MELEE});
+                    break;
+                case TALENT_TREE_DRUID_RESTORATION:
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_NATURE_DMG});
+                    break;
+            }
+            break;
+    }
+    return getEnchantCategoryMask(plrEnchCats);
+}
+
+uint32 getItemEnchantCategoryMask(Item* item)
+{
+    std::vector<EnchantCategory> itmEnchCats;
+    switch (item->GetTemplate()->Class)
+    {
+        case ITEM_CLASS_ARMOR:
+            switch (item->GetTemplate()->SubClass)
+            {
+                case ITEM_SUBCLASS_ARMOR_CLOTH:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_INTELLECT,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_LEATHER:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_RANGED,ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_MAIL:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_MELEE,ENCH_CAT_RANGED,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_PLATE:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_SHIELD:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_NATURE_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_LIBRAM:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_IDOL:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_NATURE_DMG,ENCH_CAT_ARCANE_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_TOTEM:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG});
+                    break;
+                case ITEM_SUBCLASS_ARMOR_SIGIL:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
+                    break;
+            }
+            break;
+        case ITEM_CLASS_WEAPON:
+            switch (item->GetTemplate()->SubClass)
+            {
+                case ITEM_SUBCLASS_WEAPON_AXE:
+                case ITEM_SUBCLASS_WEAPON_AXE2:
+                case ITEM_SUBCLASS_WEAPON_MACE:
+                case ITEM_SUBCLASS_WEAPON_MACE2:
+                case ITEM_SUBCLASS_WEAPON_SWORD:
+                case ITEM_SUBCLASS_WEAPON_SWORD2:
+                case ITEM_SUBCLASS_WEAPON_POLEARM:
+                case ITEM_SUBCLASS_WEAPON_DAGGER:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    break;
+                case ITEM_SUBCLASS_WEAPON_BOW:
+                case ITEM_SUBCLASS_WEAPON_GUN:
+                case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_RANGED});
+                    break;
+                case ITEM_SUBCLASS_WEAPON_FIST:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    break;
+                case ITEM_SUBCLASS_WEAPON_THROWN:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE});
+                    break;
+                case ITEM_SUBCLASS_WEAPON_WAND:
+                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_INTELLECT,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    break;
+                case ITEM_SUBCLASS_WEAPON_SPEAR:
+                case ITEM_SUBCLASS_WEAPON_obsolete:
+                case ITEM_SUBCLASS_WEAPON_STAFF:
+                case ITEM_SUBCLASS_WEAPON_EXOTIC:
+                case ITEM_SUBCLASS_WEAPON_EXOTIC2:
+                case ITEM_SUBCLASS_WEAPON_MISC:
+                case ITEM_SUBCLASS_WEAPON_FISHING_POLE:
+                    break;
+            }
+            break;
+    }
+    return getEnchantCategoryMask(itmEnchCats);
+}
+
+uint32 getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
+{
+    if(player)
+    {
+        return getPlayerEnchantCategoryMask(player);
+    }
+    return getItemEnchantCategoryMask(item);
+}
+
+// END UTILS
+
 // Our random enchants can go up to 5 slots and they occupy the same slots as the stats given from
 // random props. i.e. If there are 2 slots occupied from random properties, then we have a max of
 // 5 - 2 = 3 slots. 
@@ -18,6 +350,7 @@ bool default_announce_on_log = true;
 bool default_on_loot = true;
 bool default_on_create = true;
 bool default_on_quest_reward = true;
+bool default_use_new_random_enchant_system = true;
 std::string default_login_message ="This server is running a RandomEnchants Module.";
 
 std::vector<EnchantmentSlot> default_allowed_rand_enchant_slots = {
@@ -27,8 +360,6 @@ std::vector<EnchantmentSlot> default_allowed_rand_enchant_slots = {
     PROP_ENCHANTMENT_SLOT_1,
     PROP_ENCHANTMENT_SLOT_0,
 };
-
-std::vector<const SpellItemEnchantmentEntry*> enchant_entries;
 
 // CONFIGURATION
 
@@ -43,6 +374,7 @@ bool config_announce_on_log = default_announce_on_log;
 bool config_on_loot = default_on_loot;
 bool config_on_create = default_on_create;
 bool config_on_quest_reward = default_on_quest_reward;
+bool config_use_new_random_enchant_system = default_use_new_random_enchant_system;
 std::string config_login_message = default_login_message;
 
 
@@ -57,6 +389,7 @@ public:
         config_on_loot = sConfigMgr->GetOption<bool>("RandomEnchants.OnLoot", default_on_loot);
         config_on_create = sConfigMgr->GetOption<bool>("RandomEnchants.OnCreate", default_on_create);
         config_on_quest_reward = sConfigMgr->GetOption<bool>("RandomEnchants.OnQuestReward", default_on_quest_reward);
+        config_use_new_random_enchant_system = sConfigMgr->GetOption<bool>("RandomEnchants.UseNewRandomEnchantSystem", default_use_new_random_enchant_system);
         config_login_message = sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", default_login_message);
         config_enchant_pcts[0] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.1", default_enchant_pcts[0]);
         config_enchant_pcts[1] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.2", default_enchant_pcts[1]);
@@ -120,8 +453,57 @@ public:
             chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 %d |rrandom enchantments!", item->GetTemplate()->Name1.c_str(), numActualEnchants);
         }
     }
+
+    int getRandomEnchantment_New(Item* item, Player* player = nullptr)
+    {
+        uint32 Class = item->GetTemplate()->Class;
+        uint32 subclassMask = 1 << item->GetTemplate()->SubClass;
+        int level = getLevelOffset(item, player);
+        uint32 enchantCategoryMask = getPlayerItemEnchantCategoryMask(item, player);
+
+        int maxCount = 50;
+        while (maxCount > 0)
+        {
+        QueryResult qr = WorldDatabase.Query(R"(select ID from item_enchantment_random_tiers_NEW WHERE
+MinLevel <= {} and {} <= MaxLevel AND
+(
+ItemClass is NULL OR
+ItemClass = {} AND ItemSubClassMask is NULL OR
+ItemClass = {} AND ItemSubClassMask & {} > 0
+) AND
+(
+EnchantCategory is NULL OR
+EnchantCategory & {} > 0
+) ORDER BY RAND() LIMIT 1)", level, level, Class, Class, subclassMask, enchantCategoryMask);
+            if (qr)
+            {
+                int enchID = qr->Fetch()[0].Get<uint32>();
+                if (
+                    player &&
+                    !(
+                        playerHasSkillRequirementForEnchant(player, enchID) &&
+                        playerHasLevelRequirementForEnchant(player, enchID)
+                    )
+                )
+                {
+                    // If a player is available, we check if the user can use the enchant
+                    continue;
+                }
+                return enchID;
+            }
+            // get rand enchant ID failed for some reason, should not happen, we still just continue and try to get
+            // another one.
+            maxCount--;
+        }
+        return -1;
+    }
+
     int getRandEnchantment(Item* item, Player* player = nullptr)
     {
+        if (config_use_new_random_enchant_system)
+        {
+            return getRandomEnchantment_New(item, player);
+        }
         uint32 Class = item->GetTemplate()->Class;
         std::string ClassQueryString = "";
         switch (Class)
@@ -189,13 +571,10 @@ public:
     {
         std::vector<EnchantmentSlot> availableSlots = GetAvailableEnchantSlots(item);
         std::vector<std::pair<uint32, EnchantmentSlot>> rolledEnchants;
-        std::size_t i = 0;
-        for (auto slot : availableSlots)
+        
+        for (std::size_t i = 0; i < availableSlots.size(); ++i)
         {
-            if (i >= availableSlots.size())
-            {
-                break;
-            }
+            auto slot = availableSlots[i];
             float rollpct = config_enchant_pcts[i];
             float roll = (float)rand_chance();
             if (roll + rollpct < 100.0)
@@ -208,7 +587,6 @@ public:
             {
                 rolledEnchants.push_back(std::make_pair((uint32)randEnch, slot));
             }
-            i++;
         }
         return rolledEnchants;
     }

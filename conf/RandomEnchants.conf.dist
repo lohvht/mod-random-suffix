@@ -41,6 +41,14 @@ RandomEnchants.OnCreate=1
 RandomEnchants.OnQuestReward=1
 
 #
+#     RandomEnchants.UseNewRandomEnchantSystem
+#        Enables the use of the newer system where random enchants are filtered via categories relevant to
+#        item's class (i.e. weapon type, armour type) / player's class
+#        Default:     1
+
+RandomEnchants.UseNewRandomEnchantSystem=1
+
+#
 #     RandomEnchants.RollPercentage.1
 #     RandomEnchants.RollPercentage.2
 #     RandomEnchants.RollPercentage.3
