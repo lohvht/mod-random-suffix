@@ -316,10 +316,10 @@ uint32 getPlayerEnchantCategoryMask(Player* player)
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_SHAMAN_ELEMENTAL:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_MELEE});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_FIRE_DMG});
                     break;
                 case TALENT_TREE_SHAMAN_ENHANCEMENT:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_FIRE_DMG});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_MELEE});
                     break;
                 case TALENT_TREE_SHAMAN_RESTORATION:
                     plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_HEALER});
