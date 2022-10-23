@@ -377,43 +377,198 @@ uint32 getPlayerEnchantCategoryMask(Player* player)
     return getEnchantCategoryMask(plrEnchCats);
 }
 
+// gets the item enchant category mask for a given item
 uint32 getItemEnchantCategoryMask(Item* item)
 {
-    std::vector<EnchantCategory> itmEnchCats;
+    // stat checks
+    bool hasMainStatAgi = false;
+    bool hasMainStatStr = false;
+    bool hasMainStatInt = false;
+    // role checks
+    bool isHealer = false;
+    bool isMelee = false;
+    bool isRanged = false;
+    bool isSpellDmg = false;
+    bool isTank = false;
+    bool isTankShielder = false;
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+    {
+        if (i >= item->GetTemplate()->StatsCount)
+        {
+            break;
+        }
+        switch (item->GetTemplate()->ItemStat[i].ItemStatType)
+        {
+            case ITEM_MOD_AGILITY:
+                hasMainStatAgi = true;
+                continue;
+            case ITEM_MOD_STRENGTH:
+                hasMainStatStr = true;
+                continue;
+            case ITEM_MOD_INTELLECT:
+                hasMainStatInt = true;
+                continue;
+            case ITEM_MOD_SPIRIT:
+                isHealer = true;
+                continue;
+            case ITEM_MOD_HIT_MELEE_RATING:
+            case ITEM_MOD_CRIT_MELEE_RATING:
+            case ITEM_MOD_HASTE_MELEE_RATING:
+            case ITEM_MOD_EXPERTISE_RATING:
+                isMelee = true;
+                continue;
+            case ITEM_MOD_HIT_RANGED_RATING:
+            case ITEM_MOD_CRIT_RANGED_RATING:
+            case ITEM_MOD_HASTE_RANGED_RATING:
+            case ITEM_MOD_RANGED_ATTACK_POWER:
+                isRanged = true;
+                continue;
+            case ITEM_MOD_HIT_SPELL_RATING:
+            case ITEM_MOD_SPELL_DAMAGE_DONE:
+            case ITEM_MOD_SPELL_PENETRATION:
+                isSpellDmg = true;
+                continue;
+            case ITEM_MOD_CRIT_SPELL_RATING:
+            case ITEM_MOD_HASTE_SPELL_RATING:
+            case ITEM_MOD_SPELL_POWER:
+            // TODO: Check proto->HasSpellPowerStat() for spellpower
+            // TODO: Check SPELL_AURA_MOD_POWER_COST_SCHOOL for specific spell schools (e.g. shadow, holy etc)
+                isSpellDmg = true;
+                isHealer = true;
+                continue;
+            case ITEM_MOD_SPELL_HEALING_DONE:
+            case ITEM_MOD_MANA_REGENERATION:
+                isHealer = true;
+                continue;
+            case ITEM_MOD_ATTACK_POWER:
+            case ITEM_MOD_ARMOR_PENETRATION_RATING:
+                isMelee = true;
+                isRanged = true;
+                continue;
+            case ITEM_MOD_DEFENSE_SKILL_RATING:
+            case ITEM_MOD_DODGE_RATING:
+            case ITEM_MOD_PARRY_RATING:
+                isTank = true;
+                continue;
+            case ITEM_MOD_BLOCK_RATING:
+            case ITEM_MOD_BLOCK_VALUE:
+                isTankShielder = true;
+                continue;
+            case ITEM_MOD_STAMINA:
+            case ITEM_MOD_HEALTH:
+            case ITEM_MOD_MANA:
+            case ITEM_MOD_HEALTH_REGEN:
+            case ITEM_MOD_HIT_RATING:
+            case ITEM_MOD_CRIT_RATING:
+            case ITEM_MOD_HASTE_RATING:
+            case ITEM_MOD_HIT_TAKEN_RATING:         // Miss Related
+            case ITEM_MOD_HIT_TAKEN_MELEE_RATING:   // Miss Related
+            case ITEM_MOD_HIT_TAKEN_RANGED_RATING:  // Miss Related
+            case ITEM_MOD_HIT_TAKEN_SPELL_RATING:   // Miss Related
+            case ITEM_MOD_CRIT_TAKEN_RATING:        // Resilience related
+            case ITEM_MOD_RESILIENCE_RATING:        // Resilience related
+            case ITEM_MOD_CRIT_TAKEN_MELEE_RATING:  // Resilience related
+            case ITEM_MOD_CRIT_TAKEN_RANGED_RATING: // Resilience related
+            case ITEM_MOD_CRIT_TAKEN_SPELL_RATING:  // Resilience related
+                continue;
+        }
+    }
+
+    std::vector<EnchantCategory> enchCatsAgi;
+    std::vector<EnchantCategory> enchCatsStr;
+    std::vector<EnchantCategory> enchCatsInt;
+    std::vector<EnchantCategory> enchCatsHealer;
+    std::vector<EnchantCategory> enchCatsMelee;
+    std::vector<EnchantCategory> enchCatsRanged;
+    std::vector<EnchantCategory> enchCatsSpellDmg;
+    std::vector<EnchantCategory> enchCatsTank;
+    std::vector<EnchantCategory> enchCatsTankShielder;
     switch (item->GetTemplate()->Class)
     {
         case ITEM_CLASS_ARMOR:
             switch (item->GetTemplate()->SubClass)
             {
                 case ITEM_SUBCLASS_ARMOR_MISC:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_RANGED,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG,ENCH_CAT_HEALER});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
                     break;
                 case ITEM_SUBCLASS_ARMOR_CLOTH:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_INTELLECT,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG,ENCH_CAT_HEALER});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
                     break;
                 case ITEM_SUBCLASS_ARMOR_LEATHER:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_RANGED,ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG,ENCH_CAT_HEALER});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_MAIL:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_MELEE,ENCH_CAT_RANGED,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_HEALER});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_PLATE:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_HEALER});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_SHIELD:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_HEALER});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_NATURE_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_LIBRAM:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_TANK_SHIELD_BLOCK,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_HEALER});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_IDOL:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_NATURE_DMG,ENCH_CAT_ARCANE_DMG,ENCH_CAT_HEALER});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_NATURE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_TOTEM:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_HEALER});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_SIGIL:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
                     break;
             }
             break;
@@ -428,21 +583,40 @@ uint32 getItemEnchantCategoryMask(Item* item)
                 case ITEM_SUBCLASS_WEAPON_SWORD2:
                 case ITEM_SUBCLASS_WEAPON_POLEARM:
                 case ITEM_SUBCLASS_WEAPON_DAGGER:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_HEALER,ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
                     break;
                 case ITEM_SUBCLASS_WEAPON_BOW:
                 case ITEM_SUBCLASS_WEAPON_GUN:
                 case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_RANGED});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
                     break;
                 case ITEM_SUBCLASS_WEAPON_FIST:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_INTELLECT,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE,ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
                     break;
                 case ITEM_SUBCLASS_WEAPON_THROWN:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_STRENGTH,ENCH_CAT_AGILITY,ENCH_CAT_TANK_DEFENSE,ENCH_CAT_MELEE});
+                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
+                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
+                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
                     break;
                 case ITEM_SUBCLASS_WEAPON_WAND:
-                    itmEnchCats.insert(itmEnchCats.end(), {ENCH_CAT_HEALER,ENCH_CAT_INTELLECT,ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
+                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
                     break;
                 case ITEM_SUBCLASS_WEAPON_SPEAR:
                 case ITEM_SUBCLASS_WEAPON_obsolete:
@@ -455,9 +629,71 @@ uint32 getItemEnchantCategoryMask(Item* item)
             }
             break;
     }
-    // // TODO: restrict enchant categories by item's own stat
-    // // Check the enum ItemModType
-    // item->GetTemplate()->HasStat(ITEM_MOD_SPELL_POWER) || item->GetTemplate()->HasSpellPowerStat()
+    std::vector<EnchantCategory> itmEnchCats;
+    bool noStats = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
+    if (noStats) {
+        // If no stats, we add every item category from the item classes (armour type, weapon weapon type etc etc).
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsAgi.begin(), enchCatsAgi.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsStr.begin(), enchCatsStr.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsInt.begin(), enchCatsInt.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsHealer.begin(), enchCatsHealer.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMelee.begin(), enchCatsMelee.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsRanged.begin(), enchCatsRanged.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsSpellDmg.begin(), enchCatsSpellDmg.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsTank.begin(), enchCatsTank.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsTankShielder.begin(), enchCatsTankShielder.end());
+        return getEnchantCategoryMask(itmEnchCats);
+    }
+    // Below, we ensure that item roles that only have either main stat or substat, if they're missing them.
+    // this is going by a very simple heuristic, but may end up being not entirely useful after all
+    bool hasOnlyMainStat = (hasMainStatAgi || hasMainStatStr || hasMainStatInt)  && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
+    bool hasOnlySubStat = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && (isHealer || isMelee || isRanged || isSpellDmg || isTank || isTankShielder);
+    if (hasOnlyMainStat)
+    {
+        if (hasMainStatAgi)
+        {
+            isMelee = true;
+            isRanged = true;
+            isTank = true;
+        }
+        if (hasMainStatStr)
+        {
+            isMelee = true;
+            isTank = true;
+            isTankShielder = true;
+        }
+        if (hasMainStatInt)
+        {
+            isHealer = true;
+            isSpellDmg = true;
+        }
+    }
+    else if (hasOnlySubStat)
+    {
+        if (isHealer || isSpellDmg)
+        {
+            hasMainStatInt = true;
+        }
+        if (isMelee || isRanged || isTank)
+        {
+            hasMainStatAgi = true;
+            hasMainStatStr = true;
+        }
+        if (isTankShielder)
+        {
+            hasMainStatStr = true;
+        }
+    }
+    // Add item categories by item's stats
+    if (hasMainStatAgi) { itmEnchCats.insert(itmEnchCats.end(), enchCatsAgi.begin(), enchCatsAgi.end()); }
+    if (hasMainStatStr) { itmEnchCats.insert(itmEnchCats.end(), enchCatsStr.begin(), enchCatsStr.end()); }
+    if (hasMainStatInt) { itmEnchCats.insert(itmEnchCats.end(), enchCatsInt.begin(), enchCatsInt.end()); }
+    if (isHealer) { itmEnchCats.insert(itmEnchCats.end(), enchCatsHealer.begin(), enchCatsHealer.end()); }
+    if (isMelee) { itmEnchCats.insert(itmEnchCats.end(), enchCatsMelee.begin(), enchCatsMelee.end()); }
+    if (isRanged) { itmEnchCats.insert(itmEnchCats.end(), enchCatsRanged.begin(), enchCatsRanged.end()); }
+    if (isSpellDmg) { itmEnchCats.insert(itmEnchCats.end(), enchCatsSpellDmg.begin(), enchCatsSpellDmg.end()); }
+    if (isTank) { itmEnchCats.insert(itmEnchCats.end(), enchCatsTank.begin(), enchCatsTank.end()); }
+    if (isTankShielder) { itmEnchCats.insert(itmEnchCats.end(), enchCatsTankShielder.begin(), enchCatsTankShielder.end()); }
     return getEnchantCategoryMask(itmEnchCats);
 }
 
