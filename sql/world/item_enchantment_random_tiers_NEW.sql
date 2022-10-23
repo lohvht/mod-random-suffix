@@ -1408,7 +1408,7 @@ INSERT INTO `item_enchantment_random_tiers_NEW` (`ID`,`Name`,`MinLevel`,`MaxLeve
   (2783, '+14 Hit Rating',                                           63, 69, NULL,   NULL,              NULL),
   (2935, '+15 Hit Rating',                                           68, 78, NULL,   NULL,              NULL),
   (3234, '+20 Hit Rating',                                           77, 83, NULL,   NULL,              NULL),
-  (2523, '+30 Ranged Hit Rating',                                    80, 82, NULL,   NULL,              NULL),
+  (2523, '+30 Ranged Hit Rating',                                    80, 82, 64,     NULL,              NULL),
   (2867, '+2 Resilience Rating',                                     60, 64, NULL,   NULL,              NULL),
   (2862, '+3 Resilience Rating',                                     62, 65, NULL,   NULL,              NULL),
   (2878, '+4 Resilience Rating',                                     63, 69, NULL,   NULL,              NULL),
