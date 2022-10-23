@@ -21,7 +21,9 @@ bool default_debug = false;
 bool default_on_loot = true;
 bool default_on_create = true;
 bool default_on_quest_reward = true;
+bool default_on_group_roll_reward_item = true;
 bool default_use_new_random_enchant_system = true;
+bool default_roll_player_class_preference = false;
 std::string default_login_message ="This server is running a RandomEnchants Module.";
 
 std::vector<EnchantmentSlot> default_allowed_rand_enchant_slots = {
@@ -46,7 +48,9 @@ bool config_debug = default_debug;
 bool config_on_loot = default_on_loot;
 bool config_on_create = default_on_create;
 bool config_on_quest_reward = default_on_quest_reward;
+bool config_on_group_roll_reward_item = default_on_group_roll_reward_item;
 bool config_use_new_random_enchant_system = default_use_new_random_enchant_system;
+bool config_roll_player_class_preference = default_roll_player_class_preference;
 std::string config_login_message = default_login_message;
 
 // UTILS
@@ -459,7 +463,7 @@ uint32 getItemEnchantCategoryMask(Item* item)
 
 uint32 getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
 {
-    if(player && isItemPlayerClassPreference(player, item))
+    if(config_roll_player_class_preference && player && isItemPlayerClassPreference(player, item))
     {
         if (config_debug)
         {
@@ -682,7 +686,9 @@ public:
         config_on_loot = sConfigMgr->GetOption<bool>("RandomEnchants.OnLoot", default_on_loot);
         config_on_create = sConfigMgr->GetOption<bool>("RandomEnchants.OnCreate", default_on_create);
         config_on_quest_reward = sConfigMgr->GetOption<bool>("RandomEnchants.OnQuestReward", default_on_quest_reward);
+        config_on_group_roll_reward_item = sConfigMgr->GetOption<bool>("RandomEnchants.OnGroupRollRewardItem", default_on_group_roll_reward_item);
         config_use_new_random_enchant_system = sConfigMgr->GetOption<bool>("RandomEnchants.UseNewRandomEnchantSystem", default_use_new_random_enchant_system);
+        config_roll_player_class_preference =  sConfigMgr->GetOption<bool>("RandomEnchants.RollPlayerClassPreference", default_roll_player_class_preference);
         config_login_message = sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", default_login_message);
         config_enchant_pcts[0] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.1", default_enchant_pcts[0]);
         config_enchant_pcts[1] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.2", default_enchant_pcts[1]);
@@ -715,6 +721,13 @@ public:
     {
         if(config_on_quest_reward)
             RollPossibleEnchant(player, item);
+    }
+    void OnGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/)
+    {
+        if (config_on_group_roll_reward_item)
+        {
+            RollPossibleEnchant(player, item);
+        }
     }
 };
 

@@ -48,6 +48,13 @@ RandomEnchants.OnCreate=1
 RandomEnchants.OnQuestReward=1
 
 #
+#     RandomEnchants.OnGroupRollRewardItem
+#        Chance at random enchant on obtaining item group roll rewards (i.e. NEED/GREED)
+#        Default:     1
+
+RandomEnchants.OnGroupRollRewardItem=1
+
+#
 #     RandomEnchants.UseNewRandomEnchantSystem
 #        Enables the use of the newer system where random enchants are filtered via categories relevant to
 #        item's class (i.e. weapon type, armour type) / player's class
@@ -74,3 +81,11 @@ RandomEnchants.RollPercentage.2=35.0
 RandomEnchants.RollPercentage.3=40.0
 RandomEnchants.RollPercentage.4=45.0
 RandomEnchants.RollPercentage.5=50.0
+
+#
+#     RandomEnchants.RollPlayerClassPreference
+#        Rolls enchants based on player class preferences, i.e. if player's class can use multiple stats (e.g. Druids)
+#        Then roll depending on the class's current spec.
+#        Default:     0
+
+RandomEnchant.RollPlayerClassPreference=0
