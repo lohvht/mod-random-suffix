@@ -958,7 +958,7 @@ public:
         if(config_on_quest_reward)
             RollPossibleEnchant(player, item);
     }
-    void OnGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/)
+    void OnGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/) override
     {
         if (config_on_group_roll_reward_item)
         {
