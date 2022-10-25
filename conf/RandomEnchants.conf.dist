@@ -88,4 +88,4 @@ RandomEnchants.RollPercentage.5=50.0
 #        Then roll depending on the class's current spec.
 #        Default:     0
 
-RandomEnchant.RollPlayerClassPreference=0
+RandomEnchants.RollPlayerClassPreference=0
