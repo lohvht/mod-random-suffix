@@ -630,6 +630,21 @@ uint32 getItemEnchantCategoryMask(Item* item)
             break;
     }
     std::vector<EnchantCategory> itmEnchCats;
+    if (config_debug)
+    {
+        
+        LOG_INFO("module", "RANDOM_ENCHANT: Getting item enchant mask, checks below:");
+        LOG_INFO("module", "       For item {}, Item ID is: {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId);
+        LOG_INFO("module", "                hasMainStatAgi = {}", hasMainStatAgi);
+        LOG_INFO("module", "                hasMainStatStr = {}", hasMainStatStr);
+        LOG_INFO("module", "                hasMainStatInt = {}", hasMainStatInt);
+        LOG_INFO("module", "                isHealer = {}", isHealer);
+        LOG_INFO("module", "                isMelee = {}", isMelee);
+        LOG_INFO("module", "                isRanged = {}", isRanged);
+        LOG_INFO("module", "                isSpellDmg = {}", isSpellDmg);
+        LOG_INFO("module", "                isTank = {}", isTank);
+        LOG_INFO("module", "                isTankShielder = {}", isTankShielder);
+    }
     bool noStats = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
     if (noStats) {
         // If no stats, we add every item category from the item classes (armour type, weapon weapon type etc etc).
