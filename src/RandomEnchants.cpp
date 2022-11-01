@@ -630,9 +630,11 @@ uint32 getItemEnchantCategoryMask(Item* item)
             break;
     }
     std::vector<EnchantCategory> itmEnchCats;
+    bool noStats = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
+    bool hasOnlyMainStat = (hasMainStatAgi || hasMainStatStr || hasMainStatInt)  && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
+    bool hasOnlySubStat = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && (isHealer || isMelee || isRanged || isSpellDmg || isTank || isTankShielder);
     if (config_debug)
     {
-        
         LOG_INFO("module", "RANDOM_ENCHANT: Getting item enchant mask, checks below:");
         LOG_INFO("module", "       For item {}, Item ID is: {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId);
         LOG_INFO("module", "                hasMainStatAgi = {}", hasMainStatAgi);
@@ -644,8 +646,10 @@ uint32 getItemEnchantCategoryMask(Item* item)
         LOG_INFO("module", "                isSpellDmg = {}", isSpellDmg);
         LOG_INFO("module", "                isTank = {}", isTank);
         LOG_INFO("module", "                isTankShielder = {}", isTankShielder);
+        LOG_INFO("module", "                noStats = {}", noStats);
+        LOG_INFO("module", "                hasOnlyMainStat = {}", hasOnlyMainStat);
+        LOG_INFO("module", "                hasOnlySubStat = {}", hasOnlySubStat);
     }
-    bool noStats = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
     if (noStats) {
         // If no stats, we add every item category from the item classes (armour type, weapon weapon type etc etc).
         itmEnchCats.insert(itmEnchCats.end(), enchCatsAgi.begin(), enchCatsAgi.end());
@@ -661,8 +665,6 @@ uint32 getItemEnchantCategoryMask(Item* item)
     }
     // Below, we ensure that item roles that only have either main stat or substat, if they're missing them.
     // this is going by a very simple heuristic, but may end up being not entirely useful after all
-    bool hasOnlyMainStat = (hasMainStatAgi || hasMainStatStr || hasMainStatInt)  && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
-    bool hasOnlySubStat = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && (isHealer || isMelee || isRanged || isSpellDmg || isTank || isTankShielder);
     if (hasOnlyMainStat)
     {
         if (hasMainStatAgi)
