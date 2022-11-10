@@ -22,6 +22,8 @@ bool default_on_loot = true;
 bool default_on_create = true;
 bool default_on_quest_reward = true;
 bool default_on_group_roll_reward_item = true;
+bool default_on_vendor_purchase = true;
+bool default_on_all_items_created = true;
 bool default_use_new_random_enchant_system = true;
 bool default_roll_player_class_preference = false;
 std::string default_login_message ="This server is running a RandomEnchants Module.";
@@ -49,6 +51,8 @@ bool config_on_loot = default_on_loot;
 bool config_on_create = default_on_create;
 bool config_on_quest_reward = default_on_quest_reward;
 bool config_on_group_roll_reward_item = default_on_group_roll_reward_item;
+bool config_on_vendor_purchase = default_on_vendor_purchase;
+bool config_on_all_items_created = default_on_all_items_created;
 bool config_use_new_random_enchant_system = default_use_new_random_enchant_system;
 bool config_roll_player_class_preference = default_roll_player_class_preference;
 std::string config_login_message = default_login_message;
@@ -940,6 +944,8 @@ public:
         config_on_create = sConfigMgr->GetOption<bool>("RandomEnchants.OnCreate", default_on_create);
         config_on_quest_reward = sConfigMgr->GetOption<bool>("RandomEnchants.OnQuestReward", default_on_quest_reward);
         config_on_group_roll_reward_item = sConfigMgr->GetOption<bool>("RandomEnchants.OnGroupRollRewardItem", default_on_group_roll_reward_item);
+        config_on_vendor_purchase = sConfigMgr->GetOption<bool>("RandomEnchants.OnVendorPurchase", default_on_vendor_purchase);
+        config_on_all_items_created = sConfigMgr->GetOption<bool>("RandomEnchants.OnAllItemsCreated", default_on_all_items_created);
         config_use_new_random_enchant_system = sConfigMgr->GetOption<bool>("RandomEnchants.UseNewRandomEnchantSystem", default_use_new_random_enchant_system);
         config_roll_player_class_preference =  sConfigMgr->GetOption<bool>("RandomEnchants.RollPlayerClassPreference", default_roll_player_class_preference);
         config_login_message = sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", default_login_message);
@@ -962,24 +968,45 @@ public:
     }
     void OnLootItem(Player* player, Item* item, uint32 /*count*/, ObjectGuid /*lootguid*/) override
     {
-        if (config_on_loot)
+        if (!config_on_all_items_created && config_on_loot)
             RollPossibleEnchant(player, item);
     }
     void OnCreateItem(Player* player, Item* item, uint32 /*count*/) override
     {
-        if (config_on_create)
+        if (!config_on_all_items_created && config_on_create)
             RollPossibleEnchant(player, item);
     }
     void OnQuestRewardItem(Player* player, Item* item, uint32 /*count*/) override
     {
-        if(config_on_quest_reward)
+        if(!config_on_all_items_created && config_on_quest_reward)
             RollPossibleEnchant(player, item);
     }
     void OnGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/) override
     {
-        if (config_on_group_roll_reward_item)
+        if (!config_on_all_items_created && config_on_group_roll_reward_item)
         {
             RollPossibleEnchant(player, item);
+        }
+    }
+    void void OnAfterStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, Item* item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) override
+    {
+        if (config_on_vendor_purchase)
+        {
+            RollPossibleEnchant(player, item);
+        }
+    }
+};
+
+class RandomEnchantsMisc : public MiscScript{
+public:
+
+    RandomEnchantsMisc() : MiscScript("RandomEnchantsMisc") { }
+
+    void OnItemCreate(Item* item, ItemTemplate const* /*itemProto*/, Player const* owner) override
+    {
+        if (config_on_all_items_created)
+        {
+            RollPossibleEnchant(owner, item);
         }
     }
 };
@@ -987,4 +1014,5 @@ public:
 void AddRandomEnchantsScripts() {
     new RandomEnchantsWorldScript();
     new RandomEnchantsPlayer();
+    new RandomEnchantsMisc();
 }

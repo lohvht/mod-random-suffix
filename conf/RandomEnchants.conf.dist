@@ -55,6 +55,21 @@ RandomEnchants.OnQuestReward=1
 RandomEnchants.OnGroupRollRewardItem=1
 
 #
+#     RandomEnchants.OnVendorPurchase
+#        Chance at random enchant on obtaining item from a vendor purchase
+#        Default:     1
+
+RandomEnchants.OnVendorPurchase=1
+
+
+#
+#     RandomEnchants.OnAllItemsCreated
+#        Chance at all item creation to get random enchants. If this is true, the other options will be
+#        automatically false as this option covers all the other cases
+#        Default:     1
+RandomEnchants.OnAllItemsCreated=1
+
+#
 #     RandomEnchants.UseNewRandomEnchantSystem
 #        Enables the use of the newer system where random enchants are filtered via categories relevant to
 #        item's class (i.e. weapon type, armour type) / player's class
