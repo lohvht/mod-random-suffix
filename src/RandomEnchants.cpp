@@ -988,9 +988,9 @@ public:
             RollPossibleEnchant(player, item);
         }
     }
-    void void OnAfterStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, Item* item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) override
+    void OnAfterStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, Item* item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) override
     {
-        if (config_on_vendor_purchase)
+        if (!config_on_all_items_created && config_on_vendor_purchase)
         {
             RollPossibleEnchant(player, item);
         }
@@ -1004,9 +1004,14 @@ public:
 
     void OnItemCreate(Item* item, ItemTemplate const* /*itemProto*/, Player const* owner) override
     {
+        if (config_debug)
+        {
+            LOG_INFO("module", "RANDOM_ENCHANT: ON ITEM CREATE!");
+            LOG_INFO("module", "       For item {}, Item ID is: {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId);
+        }
         if (config_on_all_items_created)
         {
-            RollPossibleEnchant(owner, item);
+            RollPossibleEnchant((Player*)owner, item);
         }
     }
 };
