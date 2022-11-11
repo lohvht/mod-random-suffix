@@ -121,7 +121,7 @@ bool playerHasLevelRequirementForEnchant(const Player* player, uint32 enchantID)
     return true;
 }
 
-bool isItemPlayerClassPreference(Player const* player, Item* item)
+bool isItemPlayerClassPreference(Player* player, Item* item)
 {
     if (!player)
     {
@@ -218,7 +218,7 @@ group by ItemLevel LIMIT 1)",
     return avgReqLevel;
 }
 
-int getLevelOffset(Item* item, Player const* player = nullptr)
+int getLevelOffset(Item* item, Player* player = nullptr)
 {
     int level = 1;
     if (player)
@@ -239,7 +239,7 @@ int getLevelOffset(Item* item, Player const* player = nullptr)
     return level;
 }
 
-uint32 getPlayerEnchantCategoryMask(Player const* player)
+uint32 getPlayerEnchantCategoryMask(Player* player)
 {
     std::vector<EnchantCategory> plrEnchCats;
     switch (player->getClass())
@@ -718,7 +718,7 @@ uint32 getItemEnchantCategoryMask(Item* item)
     return getEnchantCategoryMask(itmEnchCats);
 }
 
-uint32 getPlayerItemEnchantCategoryMask(Item* item, Player const* player = nullptr)
+uint32 getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
 {
     if(config_roll_player_class_preference && player && isItemPlayerClassPreference(player, item))
     {
@@ -739,7 +739,7 @@ uint32 getPlayerItemEnchantCategoryMask(Item* item, Player const* player = nullp
 
 // MAIN GET ROLL ENCHANT FUNCTIONS
 
-int getRandomEnchantment_New(Item* item, Player const* player = nullptr)
+int getRandomEnchantment_New(Item* item, Player* player = nullptr)
 {
     uint32 Class = item->GetTemplate()->Class;
     uint32 subclassMask = 1 << item->GetTemplate()->SubClass;
@@ -868,7 +868,7 @@ std::vector<EnchantmentSlot> GetAvailableEnchantSlots(Item* item)
     return availableSlots;
 }
 
-std::vector<std::pair<uint32, EnchantmentSlot>> GetRolledEnchants(Item* item, Player const* player = nullptr)
+std::vector<std::pair<uint32, EnchantmentSlot>> GetRolledEnchants(Item* item, Player* player = nullptr)
 {
     std::vector<EnchantmentSlot> availableSlots = GetAvailableEnchantSlots(item);
     std::vector<std::pair<uint32, EnchantmentSlot>> rolledEnchants;
@@ -898,7 +898,7 @@ std::vector<std::pair<uint32, EnchantmentSlot>> GetRolledEnchants(Item* item, Pl
     return rolledEnchants;
 }
 
-void RollPossibleEnchant(Player const* player, Item* item)
+void RollPossibleEnchant(Player* player, Item* item)
 {
     uint32 Quality = item->GetTemplate()->Quality;
     uint32 Class = item->GetTemplate()->Class;
@@ -1011,7 +1011,7 @@ public:
         }
         if (config_on_all_items_created)
         {
-            RollPossibleEnchant(owner, item);
+            RollPossibleEnchant((Player*)owner, item);
         }
     }
 };
