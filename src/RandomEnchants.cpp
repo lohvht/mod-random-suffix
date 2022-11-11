@@ -1011,7 +1011,7 @@ public:
         }
         if (config_on_all_items_created)
         {
-            RollPossibleEnchant((Player*)owner, item);
+            RollPossibleEnchant(const_cast<Player*>(owner), item);
         }
     }
 };
