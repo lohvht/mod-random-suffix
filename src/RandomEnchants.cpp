@@ -1016,11 +1016,6 @@ public:
 
     void OnItemCreate(Item* item, ItemTemplate const* /*itemProto*/, Player const* owner) override
     {
-        if (config_debug)
-        {
-            LOG_INFO("module", "RANDOM_ENCHANT: ON ITEM CREATE!");
-            LOG_INFO("module", "       For item {}, Item ID is: {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId);
-        }
         if (config_on_all_items_created)
         {
             Player* player = const_cast<Player*>(owner);
