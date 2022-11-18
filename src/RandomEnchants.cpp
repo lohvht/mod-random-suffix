@@ -1018,12 +1018,15 @@ public:
     {
         if (config_on_all_items_created)
         {
+            if (!owner) {
+                return;
+            }
             Player* player = const_cast<Player*>(owner);
-            if (!player->FindMap())
+            if (!player || !player->FindMap())
             {
                 return;
             }
-            RollPossibleEnchant(const_cast<Player*>(owner), item);
+            RollPossibleEnchant(player, item);
         }
     }
 };
