@@ -52,7 +52,7 @@ bool config_on_create = default_on_create;
 bool config_on_quest_reward = default_on_quest_reward;
 bool config_on_group_roll_reward_item = default_on_group_roll_reward_item;
 bool config_on_vendor_purchase = default_on_vendor_purchase;
-bool config_on_all_items_created = default_on_all_items_created;
+// bool config_on_all_items_created = default_on_all_items_created;
 bool config_use_new_random_enchant_system = default_use_new_random_enchant_system;
 bool config_roll_player_class_preference = default_roll_player_class_preference;
 std::string config_login_message = default_login_message;
@@ -868,16 +868,16 @@ std::vector<EnchantmentSlot> GetAvailableEnchantSlots(Item* item)
     return availableSlots;
 }
 
-// HasBeenTouchedByRandomEnchantMod is a hack-ish way to check if an item has possibly been touched by this mod
-// The usual blizzlike Azerothcore logic for random enchants using PROP_ENCHANTMENT_SLOT_{0,1,2,3,4} is that
-// PROP_ENCHANTMENT_SLOT_{0,1,2} will usually be touched by enchants from the `acore_world`.`item_enchantment_template`
-// table
-// This usually leaves PROP_ENCHANTMENT_SLOT_{3,4} empty, which is probably an indicator that the item has been touched
-// by this mod as this is the first enchant we'll populate.
-bool HasBeenTouchedByRandomEnchantMod(Item* item)
-{
-    return item->GetEnchantmentId(PROP_ENCHANTMENT_SLOT_4);
-}
+// // HasBeenTouchedByRandomEnchantMod is a hack-ish way to check if an item has possibly been touched by this mod
+// // The usual blizzlike Azerothcore logic for random enchants using PROP_ENCHANTMENT_SLOT_{0,1,2,3,4} is that
+// // PROP_ENCHANTMENT_SLOT_{0,1,2} will usually be touched by enchants from the `acore_world`.`item_enchantment_template`
+// // table
+// // This usually leaves PROP_ENCHANTMENT_SLOT_{3,4} empty, which is probably an indicator that the item has been touched
+// // by this mod as this is the first enchant we'll populate.
+// bool HasBeenTouchedByRandomEnchantMod(Item* item)
+// {
+//     return item->GetEnchantmentId(PROP_ENCHANTMENT_SLOT_4);
+// }
 
 std::vector<std::pair<uint32, EnchantmentSlot>> GetRolledEnchants(Item* item, Player* player = nullptr)
 {
@@ -956,7 +956,7 @@ public:
         config_on_quest_reward = sConfigMgr->GetOption<bool>("RandomEnchants.OnQuestReward", default_on_quest_reward);
         config_on_group_roll_reward_item = sConfigMgr->GetOption<bool>("RandomEnchants.OnGroupRollRewardItem", default_on_group_roll_reward_item);
         config_on_vendor_purchase = sConfigMgr->GetOption<bool>("RandomEnchants.OnVendorPurchase", default_on_vendor_purchase);
-        config_on_all_items_created = sConfigMgr->GetOption<bool>("RandomEnchants.OnAllItemsCreated", default_on_all_items_created);
+        // config_on_all_items_created = sConfigMgr->GetOption<bool>("RandomEnchants.OnAllItemsCreated", default_on_all_items_created);
         config_use_new_random_enchant_system = sConfigMgr->GetOption<bool>("RandomEnchants.UseNewRandomEnchantSystem", default_use_new_random_enchant_system);
         config_roll_player_class_preference =  sConfigMgr->GetOption<bool>("RandomEnchants.RollPlayerClassPreference", default_roll_player_class_preference);
         config_login_message = sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", default_login_message);
@@ -979,60 +979,60 @@ public:
     }
     void OnLootItem(Player* player, Item* item, uint32 /*count*/, ObjectGuid /*lootguid*/) override
     {
-        if (!HasBeenTouchedByRandomEnchantMod(item) && config_on_loot)
+        if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_loot)
 
             RollPossibleEnchant(player, item);
     }
     void OnCreateItem(Player* player, Item* item, uint32 /*count*/) override
     {
-        if (!HasBeenTouchedByRandomEnchantMod(item) && config_on_create)
+        if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_create)
             RollPossibleEnchant(player, item);
     }
     void OnQuestRewardItem(Player* player, Item* item, uint32 /*count*/) override
     {
-        if(!HasBeenTouchedByRandomEnchantMod(item) && config_on_quest_reward)
+        if(/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_quest_reward)
             RollPossibleEnchant(player, item);
     }
     void OnGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/) override
     {
-        if (!HasBeenTouchedByRandomEnchantMod(item) && config_on_group_roll_reward_item)
+        if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_group_roll_reward_item)
         {
             RollPossibleEnchant(player, item);
         }
     }
     void OnAfterStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, Item* item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) override
     {
-        if (!HasBeenTouchedByRandomEnchantMod(item) && config_on_vendor_purchase)
+        if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_vendor_purchase)
         {
             RollPossibleEnchant(player, item);
         }
     }
 };
 
-class RandomEnchantsMisc : public MiscScript{
-public:
+// class RandomEnchantsMisc : public MiscScript{
+// public:
 
-    RandomEnchantsMisc() : MiscScript("RandomEnchantsMisc") { }
+//     RandomEnchantsMisc() : MiscScript("RandomEnchantsMisc") { }
 
-    void OnItemCreate(Item* item, ItemTemplate const* /*itemProto*/, Player const* owner) override
-    {
-        if (config_on_all_items_created)
-        {
-            if (!owner) {
-                return;
-            }
-            Player* player = const_cast<Player*>(owner);
-            if (!player || !player->FindMap())
-            {
-                return;
-            }
-            RollPossibleEnchant(player, item);
-        }
-    }
-};
+//     void OnItemCreate(Item* item, ItemTemplate const* /*itemProto*/, Player const* owner) override
+//     {
+//         if (config_on_all_items_created)
+//         {
+//             if (!owner) {
+//                 return;
+//             }
+//             Player* player = const_cast<Player*>(owner);
+//             if (!player || !player->FindMap())
+//             {
+//                 return;
+//             }
+//             RollPossibleEnchant(player, item);
+//         }
+//     }
+// };
 
 void AddRandomEnchantsScripts() {
     new RandomEnchantsWorldScript();
     new RandomEnchantsPlayer();
-    new RandomEnchantsMisc();
+    // new RandomEnchantsMisc();
 }

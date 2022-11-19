@@ -47,12 +47,12 @@ RandomEnchants.OnCreate=1
 
 RandomEnchants.OnQuestReward=1
 
-#
-#     RandomEnchants.OnGroupRollRewardItem
-#        Chance at random enchant on obtaining item group roll rewards (i.e. NEED/GREED)
-#        Default:     1
+# #
+# #     RandomEnchants.OnGroupRollRewardItem
+# #        Chance at random enchant on obtaining item group roll rewards (i.e. NEED/GREED)
+# #        Default:     1
 
-RandomEnchants.OnGroupRollRewardItem=1
+# RandomEnchants.OnGroupRollRewardItem=1
 
 #
 #     RandomEnchants.OnVendorPurchase
@@ -62,12 +62,12 @@ RandomEnchants.OnGroupRollRewardItem=1
 RandomEnchants.OnVendorPurchase=1
 
 
-#
-#     RandomEnchants.OnAllItemsCreated
-#        Chance at all item creation to get random enchants. If this is true, the other options will be
-#        automatically false as this option covers all the other cases
-#        Default:     1
-RandomEnchants.OnAllItemsCreated=1
+# #
+# #     RandomEnchants.OnAllItemsCreated
+# #        Chance at all item creation to get random enchants. If this is true, the other options will be
+# #        automatically false as this option covers all the other cases
+# #        Default:     1
+# RandomEnchants.OnAllItemsCreated=1
 
 #
 #     RandomEnchants.UseNewRandomEnchantSystem
