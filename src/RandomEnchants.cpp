@@ -977,7 +977,7 @@ public:
         if (config_announce_on_log)
             ChatHandler(player->GetSession()).SendSysMessage(config_login_message);
     }
-    void OnLootItem(Player* player, Item* item, uint32 /*count*/, ObjectGuid /*lootguid*/) override
+    void OnStoreNewItem(Player* player, Item* item, uint32 /*count*/) override
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_loot)
 
