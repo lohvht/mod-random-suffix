@@ -1004,6 +1004,14 @@ public:
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_vendor_purchase)
         {
+            // Enchanting on guild tabard
+            if (item->GetTemplate()->ItemId == 5976)
+            {
+                int32 randPropID = 50000;
+                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
+                item->SetItemRandomProperties(randPropID);
+                return;
+            }
             RollPossibleEnchant(player, item);
         }
     }
