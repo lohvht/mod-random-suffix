@@ -1012,6 +1012,13 @@ public:
                 item->SetItemRandomProperties(randPropID);
                 return;
             }
+            if (item->GetTemplate()->ItemId == 44640) // Dalaran Great Axe
+            {
+                int32 randPropID = -2000;
+                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
+                item->SetItemRandomProperties(randPropID);
+                return;
+            }
             RollPossibleEnchant(player, item);
         }
     }
