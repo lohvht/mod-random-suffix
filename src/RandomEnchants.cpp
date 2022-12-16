@@ -1014,9 +1014,17 @@ public:
             }
             if (item->GetTemplate()->ItemId == 12249) // Merciless Axe
             {
-                int32 randPropID = -2000;
+                // int32 randPropID = -2000; // Our custom suffix ID
+                int32 randPropID = -5; // `of the Monkey`
                 LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
                 item->SetItemRandomProperties(randPropID);
+                // if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
+                // {
+                //     player->ApplyEnchantment(item, enchSlot, false);
+                //     item->SetEnchantment(enchSlot, enchID, 0, 0);
+                //     player->ApplyEnchantment(item, enchSlot, true);
+                //     numActualEnchants++;
+                // }
                 return;
             }
             RollPossibleEnchant(player, item);
