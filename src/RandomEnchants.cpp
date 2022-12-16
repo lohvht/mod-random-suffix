@@ -942,6 +942,9 @@ void RollPossibleEnchant(Player* player, Item* item)
 
 // END MAIN GET ROLL ENCHANTS FUNCTIONS
 
+int32 tmp_test_rnd_ench1 = 32000;
+int32 tmp_test_rnd_ench2 = -2000;
+
 class RandomEnchantsWorldScript : public WorldScript
 {
 public:
@@ -965,6 +968,9 @@ public:
         config_enchant_pcts[2] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.3", default_enchant_pcts[2]);
         config_enchant_pcts[3] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.4", default_enchant_pcts[3]);
         config_enchant_pcts[4] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.5", default_enchant_pcts[4]);
+
+        tmp_test_rnd_ench1 = sConfigMgr->GetOption<int32>("RandomEnchants.TmpEnch1", 32000);
+        tmp_test_rnd_ench2 = sConfigMgr->GetOption<int32>("RandomEnchants.TmpEnch2", -2000);
     }
 };
 
@@ -1007,17 +1013,14 @@ public:
             // Enchanting on guild tabard
             if (item->GetTemplate()->ItemId == 5976)
             {
-                int32 randPropID = 50000;
                 LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
-                item->SetItemRandomProperties(randPropID);
+                item->SetItemRandomProperties(tmp_test_rnd_ench1);
                 return;
             }
             if (item->GetTemplate()->ItemId == 12249) // Merciless Axe
             {
-                // int32 randPropID = -2000; // Our custom suffix ID
-                int32 randPropID = -5; // `of the Monkey`
                 LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
-                item->SetItemRandomProperties(randPropID);
+                item->SetItemRandomProperties(tmp_test_rnd_ench2);
                 // if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
                 // {
                 //     player->ApplyEnchantment(item, enchSlot, false);

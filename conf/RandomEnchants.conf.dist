@@ -104,3 +104,6 @@ RandomEnchants.RollPercentage.5=50.0
 #        Default:     0
 
 RandomEnchants.RollPlayerClassPreference=0
+
+RandomEnchants.TmpEnch1=32000;
+RandomEnchants.TmpEnch2=-2000;
