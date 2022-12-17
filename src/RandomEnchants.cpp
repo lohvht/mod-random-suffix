@@ -982,6 +982,8 @@ public:
     void OnLogin(Player* player) override {
         if (config_announce_on_log)
             ChatHandler(player->GetSession()).SendSysMessage(config_login_message);
+            ChatHandler(player->GetSession()).SendSysMessage("its currently configured random enchant1 is: %d", tmp_test_rnd_ench1);
+            ChatHandler(player->GetSession()).SendSysMessage("its currently configured random enchant2 is: %d", tmp_test_rnd_ench2);
     }
     void OnStoreNewItem(Player* player, Item* item, uint32 /*count*/) override
     {
