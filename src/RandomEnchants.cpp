@@ -981,9 +981,11 @@ public:
 
     void OnLogin(Player* player) override {
         if (config_announce_on_log)
+        {
             ChatHandler(player->GetSession()).SendSysMessage(config_login_message);
             ChatHandler(player->GetSession()).SendSysMessage("its currently configured random enchant1 is: %d", tmp_test_rnd_ench1);
             ChatHandler(player->GetSession()).SendSysMessage("its currently configured random enchant2 is: %d", tmp_test_rnd_ench2);
+        }
     }
     void OnStoreNewItem(Player* player, Item* item, uint32 /*count*/) override
     {
@@ -1015,13 +1017,13 @@ public:
             // Enchanting on guild tabard
             if (item->GetTemplate()->ItemId == 5976)
             {
-                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
+                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", tmp_test_rnd_ench1);
                 item->SetItemRandomProperties(tmp_test_rnd_ench1);
                 return;
             }
             if (item->GetTemplate()->ItemId == 12249) // Merciless Axe
             {
-                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", randPropID);
+                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", tmp_test_rnd_ench2);
                 item->SetItemRandomProperties(tmp_test_rnd_ench2);
                 // if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
                 // {
