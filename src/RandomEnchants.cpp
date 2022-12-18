@@ -1015,7 +1015,8 @@ public:
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_vendor_purchase)
         {
             // Enchanting on guild tabard
-            if (item->GetTemplate()->ItemId == 5976)
+            // Enchanting on dalaran great axe
+            if (item->GetTemplate()->ItemId == 5976 || item->GetTemplate()->ItemId == 44640)
             {
                 LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", tmp_test_rnd_ench1);
                 item->SetItemRandomProperties(tmp_test_rnd_ench1);
