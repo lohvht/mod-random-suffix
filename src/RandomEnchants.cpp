@@ -1026,6 +1026,11 @@ public:
             {
                 LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", tmp_test_rnd_ench2);
                 item->SetItemRandomProperties(tmp_test_rnd_ench2);
+                for (auto slot : default_allowed_rand_enchant_slots)
+                {
+                    auto enchID = item->GetEnchantmentId(slot);
+                    LOG_INFO("module", "RANDOM_ENCHANT: enchant slot: {}; enchant: {}", tmp_test_rnd_ench2, enchID);
+                }
                 // if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
                 // {
                 //     player->ApplyEnchantment(item, enchSlot, false);
