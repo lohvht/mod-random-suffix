@@ -1067,8 +1067,140 @@ public:
 //     }
 // };
 
+
+class RandomEnchantCommands : public CommandScript
+{
+public:
+    RandomEnchantCommands() : CommandScript("RandomEnchantCommands") { }
+
+    ChatCommandTable GetCommands() const override
+    {
+        static ChatCommandTable commandTable =
+        {
+            { "additemwsuffix",           HandleAddItemCommand,           SEC_GAMEMASTER,         Console::No  },
+        };
+        return commandTable;
+    }
+    static bool HandleAddItemCommand(ChatHandler* handler, ItemTemplate const* itemTemplate, Optional<int32> _count, Optional<int32> _suffID)
+    {
+        if (!sObjectMgr->GetItemTemplate(itemTemplate->ItemId))
+        {
+            handler->PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemTemplate->ItemId);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        uint32 itemId = itemTemplate->ItemId;
+        int32 count = 1;
+
+        if (_count)
+        {
+            count = *_count;
+        }
+
+        if (!count)
+        {
+            count = 1;
+        }
+        int32 suffID = 0;
+        if (_suffID)
+        {
+            suffID = *_suffID;
+        }
+
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* playerTarget = handler->getSelectedPlayer();
+
+        if (!playerTarget)
+        {
+            playerTarget = player;
+        }
+
+        // Subtract
+        if (count < 0)
+        {
+            // Only have scam check on player accounts
+            if (playerTarget->GetSession()->GetSecurity() == SEC_PLAYER)
+            {
+                if (!playerTarget->HasItemCount(itemId, 0))
+                {
+                    // output that player don't have any items to destroy
+                    handler->PSendSysMessage(LANG_REMOVEITEM_FAILURE, handler->GetNameLink(playerTarget).c_str(), itemId);
+                    handler->SetSentErrorMessage(true);
+                    return false;
+                }
+
+                if (!playerTarget->HasItemCount(itemId, -count))
+                {
+                    // output that player don't have as many items that you want to destroy
+                    handler->PSendSysMessage(LANG_REMOVEITEM_ERROR, handler->GetNameLink(playerTarget).c_str(), itemId);
+                    handler->SetSentErrorMessage(true);
+                    return false;
+                }
+            }
+
+            // output successful amount of destroyed items
+            playerTarget->DestroyItemCount(itemId, -count, true, false);
+            handler->PSendSysMessage(LANG_REMOVEITEM, itemId, -count, handler->GetNameLink(playerTarget).c_str());
+            return true;
+        }
+
+        // Adding items
+        uint32 noSpaceForCount = 0;
+
+        // check space and find places
+        ItemPosCountVec dest;
+        InventoryResult msg = playerTarget->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
+
+        if (msg != EQUIP_ERR_OK) // convert to possible store amount
+        {
+            count -= noSpaceForCount;
+        }
+
+        if (!count || dest.empty()) // can't add any
+        {
+            handler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        Item* item = playerTarget->StoreNewItem(dest, itemId, true);
+
+        // remove binding (let GM give it to another player later)
+        if (player == playerTarget)
+        {
+            for (auto const& itemPos : dest)
+            {
+                if (Item* item1 = player->GetItemByPos(itemPos.pos))
+                {
+                    item1->SetBinding(false);
+                }
+            }
+        }
+
+        if (count && item)
+        {
+            item->SetItemRandomProperties(suffID);
+            player->SendNewItem(item, count, false, true);
+
+            if (player != playerTarget)
+            {
+                playerTarget->SendNewItem(item, count, true, false);
+            }
+        }
+
+        if (noSpaceForCount)
+        {
+            handler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
+        }
+
+        return true;
+    }
+};
+
 void AddRandomEnchantsScripts() {
     new RandomEnchantsWorldScript();
     new RandomEnchantsPlayer();
+    new RandomEnchantCommands();
     // new RandomEnchantsMisc();
 }
