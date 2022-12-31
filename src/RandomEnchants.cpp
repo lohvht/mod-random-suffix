@@ -57,6 +57,33 @@ bool config_use_new_random_enchant_system = default_use_new_random_enchant_syste
 bool config_roll_player_class_preference = default_roll_player_class_preference;
 std::string config_login_message = default_login_message;
 
+
+// // TODO: Attributes as enums!
+
+// AStrength
+// AAgility
+// AIntellect
+// ASpirit
+// AStamina
+// AAttackPower
+// ASpellPower
+// AHaste
+// AHit
+// ACrit
+// AExpertise
+// ADefenseRating
+// ADodge
+// AParry
+
+// // TODO: Change enchant category to those below
+
+// ECMeleeStrDPS
+// ECMeleeStrTank
+// ECMeleeAgiDPS
+// ECMeleeAgiTank
+// ECRangedAgi
+// ECCaster
+
 // UTILS
 enum EnchantCategory
 {
@@ -1067,6 +1094,8 @@ public:
 //     }
 // };
 
+
+using namespace Acore::ChatCommands;
 
 class RandomEnchantCommands : public CommandScript
 {
