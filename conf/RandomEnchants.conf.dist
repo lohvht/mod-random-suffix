@@ -70,19 +70,10 @@ RandomEnchants.OnVendorPurchase=1
 # RandomEnchants.OnAllItemsCreated=1
 
 #
-#     RandomEnchants.UseNewRandomEnchantSystem
-#        Enables the use of the newer system where random enchants are filtered via categories relevant to
-#        item's class (i.e. weapon type, armour type) / player's class
-#        Default:     1
-
-RandomEnchants.UseNewRandomEnchantSystem=1
-
-#
 #     RandomEnchants.RollPercentage.1
 #     RandomEnchants.RollPercentage.2
 #     RandomEnchants.RollPercentage.3
 #     RandomEnchants.RollPercentage.4
-#     RandomEnchants.RollPercentage.5
 #        Each of the above toggles how the chance of getting each roll
 #        This goes up to 5 rolls for items that can be enchanted 5 times.
 #        Default:     30.0
@@ -95,7 +86,6 @@ RandomEnchants.RollPercentage.1=30.0
 RandomEnchants.RollPercentage.2=35.0
 RandomEnchants.RollPercentage.3=40.0
 RandomEnchants.RollPercentage.4=45.0
-RandomEnchants.RollPercentage.5=50.0
 
 #
 #     RandomEnchants.RollPlayerClassPreference
@@ -104,6 +94,3 @@ RandomEnchants.RollPercentage.5=50.0
 #        Default:     0
 
 RandomEnchants.RollPlayerClassPreference=0
-
-RandomEnchants.TmpEnch1=32000
-RandomEnchants.TmpEnch2=-2000

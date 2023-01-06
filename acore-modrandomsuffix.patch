@@ -1,0 +1,61 @@
+diff --git a/src/server/game/Chat/HyperlinkTags.cpp b/src/server/game/Chat/HyperlinkTags.cpp
+index 49efa0b2f..64f6f521f 100644
+--- a/src/server/game/Chat/HyperlinkTags.cpp
++++ b/src/server/game/Chat/HyperlinkTags.cpp
+@@ -148,8 +148,8 @@ bool Acore::Hyperlinks::LinkTags::item::StoreTo(ItemLinkData& val, std::string_v
+ 
+     if (randomPropertyId < 0)
+     {
+-        if (!val.Item->RandomSuffix)
+-            return false;
++        // if (!val.Item->RandomSuffix)
++        //     return false;
+ 
+         if (randomPropertyId < -static_cast<int32>(sItemRandomSuffixStore.GetNumRows()))
+             return false;
+@@ -164,8 +164,8 @@ bool Acore::Hyperlinks::LinkTags::item::StoreTo(ItemLinkData& val, std::string_v
+     }
+     else if (randomPropertyId > 0)
+     {
+-        if (!val.Item->RandomProperty)
+-            return false;
++        // if (!val.Item->RandomProperty)
++        //     return false;
+ 
+         if (ItemRandomPropertiesEntry const* propEntry = sItemRandomPropertiesStore.LookupEntry(randomPropertyId))
+         {
+@@ -181,8 +181,8 @@ bool Acore::Hyperlinks::LinkTags::item::StoreTo(ItemLinkData& val, std::string_v
+         val.RandomProperty = nullptr;
+     }
+ 
+-    if ((val.RandomSuffix && !val.RandomSuffixBaseAmount) || (val.RandomSuffixBaseAmount && !val.RandomSuffix))
+-        return false;
++    // if ((val.RandomSuffix && !val.RandomSuffixBaseAmount) || (val.RandomSuffixBaseAmount && !val.RandomSuffix))
++    //     return false;
+ 
+     return true;
+ }
+diff --git a/src/server/game/Entities/Item/ItemEnchantmentMgr.cpp b/src/server/game/Entities/Item/ItemEnchantmentMgr.cpp
+index 6696e66b9..6e2cf0190 100644
+--- a/src/server/game/Entities/Item/ItemEnchantmentMgr.cpp
++++ b/src/server/game/Entities/Item/ItemEnchantmentMgr.cpp
+@@ -125,8 +125,9 @@ uint32 GenerateEnchSuffixFactor(uint32 item_id)
+ 
+     if (!itemProto)
+         return 0;
+-    if (!itemProto->RandomSuffix)
+-        return 0;
++    // Disable this check to enable generating suffix factor for ALL items
++    // if (!itemProto->RandomSuffix)
++    //     return 0;
+ 
+     RandomPropertiesPointsEntry const* randomProperty = sRandomPropertiesPointsStore.LookupEntry(itemProto->ItemLevel);
+     if (!randomProperty)
+@@ -190,6 +191,7 @@ uint32 GenerateEnchSuffixFactor(uint32 item_id)
+         case ITEM_QUALITY_EPIC:
+             return randomProperty->EpicPropertiesPoints[suffixFactor];
+         case ITEM_QUALITY_LEGENDARY:
++            return randomProperty->EpicPropertiesPoints[suffixFactor];
+         case ITEM_QUALITY_ARTIFACT:
+             return 0;                                       // not have random properties
+         default:

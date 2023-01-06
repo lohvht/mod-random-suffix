@@ -9,12 +9,10 @@
 
 // DEFAULT VALUES
 
-// Our random enchants can go up to 5 slots and they occupy the same slots as the stats given from
-// random props. i.e. If there are 2 slots occupied from random properties, then we have a max of
-// 5 - 2 = 3 slots. 
-#define MAX_RAND_ENCHANT_SLOTS 5
+// Our suffix tiers can go up to 4.
+#define MAX_RAND_ENCHANT_TIERS 4
 
-double default_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {30.0, 35.0, 40.0, 45.0, 50.0};
+double default_enchant_pcts[MAX_RAND_ENCHANT_TIERS] = {30.0, 35.0, 40.0, 45.0};
 
 bool default_announce_on_log = true;
 bool default_debug = false;
@@ -28,22 +26,13 @@ bool default_use_new_random_enchant_system = true;
 bool default_roll_player_class_preference = false;
 std::string default_login_message ="This server is running a RandomEnchants Module.";
 
-std::vector<EnchantmentSlot> default_allowed_rand_enchant_slots = {
-    PROP_ENCHANTMENT_SLOT_4,
-    PROP_ENCHANTMENT_SLOT_3,
-    PROP_ENCHANTMENT_SLOT_2,
-    PROP_ENCHANTMENT_SLOT_1,
-    PROP_ENCHANTMENT_SLOT_0,
-};
-
 // CONFIGURATION
 
-double config_enchant_pcts[MAX_RAND_ENCHANT_SLOTS] = {
+double config_enchant_pcts[MAX_RAND_ENCHANT_TIERS] = {
     default_enchant_pcts[0],
     default_enchant_pcts[1],
     default_enchant_pcts[2],
     default_enchant_pcts[3],
-    default_enchant_pcts[4],
 };
 bool config_announce_on_log = default_announce_on_log;
 bool config_debug = default_debug;
@@ -57,51 +46,33 @@ bool config_use_new_random_enchant_system = default_use_new_random_enchant_syste
 bool config_roll_player_class_preference = default_roll_player_class_preference;
 std::string config_login_message = default_login_message;
 
-
-// // TODO: Attributes as enums!
-
-// AStrength
-// AAgility
-// AIntellect
-// ASpirit
-// AStamina
-// AAttackPower
-// ASpellPower
-// AHaste
-// AHit
-// ACrit
-// AExpertise
-// ADefenseRating
-// ADodge
-// AParry
-
-// // TODO: Change enchant category to those below
-
-// ECMeleeStrDPS
-// ECMeleeStrTank
-// ECMeleeAgiDPS
-// ECMeleeAgiTank
-// ECRangedAgi
-// ECCaster
+enum Attributes
+{
+    ATTRIBUTE_STRENGTH      = 0,  
+    ATTRIBUTE_AGILITY       = 1,  
+    ATTRIBUTE_INTELLECT     = 2,  
+    ATTRIBUTE_SPIRIT        = 3,  
+    ATTRIBUTE_STAMINA       = 4,  
+    ATTRIBUTE_ATTACKPOWER   = 5,  
+    ATTRIBUTE_SPELLPOWER    = 6,  
+    ATTRIBUTE_HASTE         = 7,  
+    ATTRIBUTE_HIT           = 8,  
+    ATTRIBUTE_CRIT          = 9,  
+    ATTRIBUTE_EXPERTISE     = 10,  
+    ATTRIBUTE_DEFENSERATING = 11,  
+    ATTRIBUTE_DODGE         = 12,  
+    ATTRIBUTE_PARRY         = 13,  
+}
 
 // UTILS
 enum EnchantCategory
 {
-    ENCH_CAT_STRENGTH          = 0,  // TITLE strength users
-    ENCH_CAT_AGILITY           = 1,  // TITLE agi users
-    ENCH_CAT_INTELLECT         = 2,  // TITLE int users
-    ENCH_CAT_TANK_DEFENSE      = 3,  // TITLE tanks with defense stats
-    ENCH_CAT_TANK_SHIELD_BLOCK = 4,  // TITLE tanks that use shields // TODO: Maybe not needed with ENCH_CAT_TANK_DEFENSE if the above FIX for itemSubclass is done properly
-    ENCH_CAT_MELEE             = 5,  // TITLE uses expertise, melee damage
-    ENCH_CAT_RANGED            = 6,  // TITLE ranged dps (primarily hunter)
-    ENCH_CAT_CASTER            = 7,  // TITLE casters, mainly spell power
-    ENCH_CAT_HOLY_DMG          = 8,  // TITLE Holy damage
-    ENCH_CAT_SHADOW_DMG        = 9,  // TITLE Shadow damage
-    ENCH_CAT_FROST_DMG         = 10, // TITLE Frost damage
-    ENCH_CAT_NATURE_DMG        = 11, // TITLE Nature damage
-    ENCH_CAT_FIRE_DMG          = 12, // TITLE Fire damage
-    ENCH_CAT_ARCANE_DMG        = 13, // TITLE Arcane damage
-    ENCH_CAT_HEALER            = 14, // TITLE for healers, mainly Spirit
+    ENCH_CAT_MELEE_STR_DPS  = 0,
+    ENCH_CAT_MELEE_STR_TANK = 1,
+    ENCH_CAT_MELEE_AGI_DPS  = 2,
+    ENCH_CAT_MELEE_AGI_TANK = 3,
+    ENCH_CAT_RANGED_AGI     = 4,
+    ENCH_CAT_CASTER         = 5,
 };
 
 uint32 getEnchantCategoryMask(std::vector<EnchantCategory> enchCategories)
@@ -114,108 +85,14 @@ uint32 getEnchantCategoryMask(std::vector<EnchantCategory> enchCategories)
     return r;
 }
 
-uint32 getMask(std::vector<uint32> us)
+uint32 getAttributeMask(std::vector<Attributes> attributes)
 {
     uint32 r = 0;
-    for (auto u : us)
+    for (auto enchCat : attributes)
     {
-        r |= 1 << u;
+        r |= 1 << enchCat;
     }
     return r;
-}
-
-bool playerHasSkillRequirementForEnchant(const Player* player, uint32 enchantID)
-{
-    if (SpellItemEnchantmentEntry const* enchantEntry = sSpellItemEnchantmentStore.LookupEntry(enchantID))
-    {
-        if (enchantEntry->requiredSkill && player->GetSkillValue(enchantEntry->requiredSkill) < enchantEntry->requiredSkillValue)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool playerHasLevelRequirementForEnchant(const Player* player, uint32 enchantID)
-{
-    if (SpellItemEnchantmentEntry const* enchantEntry = sSpellItemEnchantmentStore.LookupEntry(enchantID))
-    {
-        if (player->getLevel() < enchantEntry->requiredLevel)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool isItemPlayerClassPreference(Player* player, Item* item)
-{
-    if (!player)
-    {
-        return false;
-    }
-    // If its misc items that everyone can use, it is preferred.
-    switch (item->GetTemplate()->InventoryType)
-    {
-        case INVTYPE_NECK:
-        case INVTYPE_FINGER:
-        case INVTYPE_TRINKET:
-        case INVTYPE_CLOAK:
-        case INVTYPE_TABARD:
-        case INVTYPE_BODY: // shirt
-            return true;
-    }
-    if (item->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-    {
-        return player->CanUseItem(item->GetTemplate()) == EQUIP_ERR_OK;
-    }
-    if (item->GetTemplate()->Class == ITEM_CLASS_ARMOR)
-    {
-        std::vector<uint32> armorSubclasses;
-        switch (player->getClass())
-        {
-            case CLASS_PALADIN:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_LIBRAM, ITEM_SUBCLASS_ARMOR_SHIELD});
-                goto PLATE_USER_LABEL;
-            case CLASS_DEATH_KNIGHT:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_SIGIL});
-                goto PLATE_USER_LABEL;
-            case CLASS_WARRIOR:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_SHIELD});
-PLATE_USER_LABEL:
-                if (player->HasSkill(SKILL_PLATE_MAIL)) {
-                    armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_PLATE});
-                } else {
-                    armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_MAIL});
-                }
-                break;
-            case CLASS_SHAMAN:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_TOTEM, ITEM_SUBCLASS_ARMOR_SHIELD});
-                goto MAIL_USER_LABEL;
-            case CLASS_HUNTER:
-MAIL_USER_LABEL:
-                if (player->HasSkill(SKILL_MAIL)) {
-                    armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_MAIL});
-                } else {
-                    armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_LEATHER});
-                }
-                break;
-            case CLASS_DRUID:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_IDOL});
-                goto LEATHER_USER_LABEL;
-            case CLASS_ROGUE:
-LEATHER_USER_LABEL:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_LEATHER});
-                break;
-            case CLASS_PRIEST:
-            case CLASS_MAGE:
-            case CLASS_WARLOCK:
-                armorSubclasses.insert(armorSubclasses.end(), {ITEM_SUBCLASS_ARMOR_CLOTH});
-                break;
-        }
-        return (getMask(armorSubclasses) & (1 << item->GetTemplate()->SubClass)) > 0;
-    }
-    return false;
 }
 
 // getItemPlayerLevel retrieves an item's player required level
@@ -266,40 +143,46 @@ int getLevelOffset(Item* item, Player* player = nullptr)
     return level;
 }
 
-uint32 getPlayerEnchantCategoryMask(Player* player)
+auto getPlayerEnchantCategoryMask(Player* player)
 {
     std::vector<EnchantCategory> plrEnchCats;
+    std::vector<Attributes> plrAttrs;
     switch (player->getClass())
     {
         case CLASS_WARRIOR:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
             case TALENT_TREE_WARRIOR_ARMS:
             case TALENT_TREE_WARRIOR_FURY:
+                plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_STR_DPS});
                 break;
             case TALENT_TREE_WARRIOR_PROTECTION:
-                plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_TANK_DEFENSE, ENCH_CAT_TANK_SHIELD_BLOCK});
+                plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_STR_TANK});
                 break;
             }
             break;
         case CLASS_PALADIN:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER, ENCH_CAT_HOLY_DMG});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_PALADIN_HOLY:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_HEALER});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
                     break;
                 case TALENT_TREE_PALADIN_PROTECTION:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE, ENCH_CAT_TANK_DEFENSE, ENCH_CAT_TANK_SHIELD_BLOCK});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_STR_TANK});
                     break;
                 case TALENT_TREE_PALADIN_RETRIBUTION:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_STR_DPS});
                     break;
             }
             break;
         case CLASS_HUNTER:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_RANGED});
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_RANGED_AGI});
+            plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_HUNTER_BEAST_MASTERY:
@@ -309,7 +192,7 @@ uint32 getPlayerEnchantCategoryMask(Player* player)
             }
             break;
         case CLASS_ROGUE:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_MELEE});
+            plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_ROGUE_ASSASSINATION:
@@ -319,74 +202,65 @@ uint32 getPlayerEnchantCategoryMask(Player* player)
             }
             break;
         case CLASS_PRIEST:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_HEALER});
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
+            plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_CRIT});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_PRIEST_DISCIPLINE:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_HOLY_DMG});
-                    break;
                 case TALENT_TREE_PRIEST_HOLY:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_HOLY_DMG});
                     break;
                 case TALENT_TREE_PRIEST_SHADOW:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_SHADOW_DMG});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_HIT});
                     break;
             }
             break;
         case CLASS_DEATH_KNIGHT:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_STRENGTH, ENCH_CAT_MELEE, ENCH_CAT_CASTER, ENCH_CAT_SHADOW_DMG, ENCH_CAT_TANK_DEFENSE});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_DEATH_KNIGHT_BLOOD:
-                    break;
                 case TALENT_TREE_DEATH_KNIGHT_FROST:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FROST_DMG});
-                    break;
                 case TALENT_TREE_DEATH_KNIGHT_UNHOLY:
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_STR_DPS, ENCH_CAT_MELEE_STR_TANK});
                     break;
             }
             break;
         case CLASS_SHAMAN:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_NATURE_DMG, ENCH_CAT_CASTER});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_SHAMAN_ELEMENTAL:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_FIRE_DMG});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
                     break;
                 case TALENT_TREE_SHAMAN_ENHANCEMENT:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_MELEE});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STAMINA,ATTRIBUTE_STRENGTH,ATTRIBUTE_AGILITY,ATTRIBUTE_INTELLECT,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_AGI_DPS});
                     break;
                 case TALENT_TREE_SHAMAN_RESTORATION:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_HEALER});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_CRIT});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
                     break;
             }
             break;
         case CLASS_MAGE:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER});
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
+            plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_MAGE_ARCANE:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_ARCANE_DMG});
-                    break;
                 case TALENT_TREE_MAGE_FIRE:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FIRE_DMG});
-                    break;
                 case TALENT_TREE_MAGE_FROST:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FROST_DMG});
                     break;
             }
             break;
         case CLASS_WARLOCK:
-            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_SHADOW_DMG});
+            plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
+            plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_WARLOCK_AFFLICTION:
-                    break;
                 case TALENT_TREE_WARLOCK_DEMONOLOGY:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FIRE_DMG});
-                    break;
                 case TALENT_TREE_WARLOCK_DESTRUCTION:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_FIRE_DMG});
                     break;
             }
             break;
@@ -394,34 +268,37 @@ uint32 getPlayerEnchantCategoryMask(Player* player)
             switch (player->GetSpec(player->GetActiveSpec()))
             {
                 case TALENT_TREE_DRUID_BALANCE:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_NATURE_DMG, ENCH_CAT_ARCANE_DMG});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                     break;
                 case TALENT_TREE_DRUID_FERAL_COMBAT:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_AGILITY, ENCH_CAT_TANK_DEFENSE, ENCH_CAT_MELEE});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
                     break;
                 case TALENT_TREE_DRUID_RESTORATION:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_INTELLECT, ENCH_CAT_CASTER, ENCH_CAT_HEALER, ENCH_CAT_NATURE_DMG});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
+                    plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_CRIT});
                     break;
             }
             break;
     }
-    return getEnchantCategoryMask(plrEnchCats);
+    struct retVals {
+        uint32 enchCatMask, attrMask;
+    };
+    return retVals{getEnchantCategoryMask(plrEnchCats), getAttributeMask(plrAttrs)};
 }
 
 // gets the item enchant category mask for a given item
-uint32 getItemEnchantCategoryMask(Item* item)
+auto getItemEnchantCategoryMask(Item* item)
 {
-    // stat checks
-    bool hasMainStatAgi = false;
-    bool hasMainStatStr = false;
-    bool hasMainStatInt = false;
     // role checks
-    bool isHealer = false;
-    bool isMelee = false;
     bool isRanged = false;
-    bool isSpellDmg = false;
+    bool isMelee = false;
+    bool isPhysDPS = false;
+    bool isStr = false;
+    bool isAgi = false;
     bool isTank = false;
-    bool isTankShielder = false;
+    bool isCaster = false;
     for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
     {
         if (i >= item->GetTemplate()->StatsCount)
@@ -431,16 +308,14 @@ uint32 getItemEnchantCategoryMask(Item* item)
         switch (item->GetTemplate()->ItemStat[i].ItemStatType)
         {
             case ITEM_MOD_AGILITY:
-                hasMainStatAgi = true;
+                isAgi = true;
                 continue;
             case ITEM_MOD_STRENGTH:
-                hasMainStatStr = true;
+                isStr = true;
                 continue;
             case ITEM_MOD_INTELLECT:
-                hasMainStatInt = true;
-                continue;
             case ITEM_MOD_SPIRIT:
-                isHealer = true;
+                isCaster = true;
                 continue;
             case ITEM_MOD_HIT_MELEE_RATING:
             case ITEM_MOD_CRIT_MELEE_RATING:
@@ -457,24 +332,22 @@ uint32 getItemEnchantCategoryMask(Item* item)
             case ITEM_MOD_HIT_SPELL_RATING:
             case ITEM_MOD_SPELL_DAMAGE_DONE:
             case ITEM_MOD_SPELL_PENETRATION:
-                isSpellDmg = true;
+                isCaster = true;
                 continue;
             case ITEM_MOD_CRIT_SPELL_RATING:
             case ITEM_MOD_HASTE_SPELL_RATING:
             case ITEM_MOD_SPELL_POWER:
             // TODO: Check proto->HasSpellPowerStat() for spellpower
             // TODO: Check SPELL_AURA_MOD_POWER_COST_SCHOOL for specific spell schools (e.g. shadow, holy etc)
-                isSpellDmg = true;
-                isHealer = true;
+                isCaster = true;
                 continue;
             case ITEM_MOD_SPELL_HEALING_DONE:
             case ITEM_MOD_MANA_REGENERATION:
-                isHealer = true;
+                isCaster = true;
                 continue;
             case ITEM_MOD_ATTACK_POWER:
             case ITEM_MOD_ARMOR_PENETRATION_RATING:
-                isMelee = true;
-                isRanged = true;
+                isPhysDPS = true;
                 continue;
             case ITEM_MOD_DEFENSE_SKILL_RATING:
             case ITEM_MOD_DODGE_RATING:
@@ -483,7 +356,7 @@ uint32 getItemEnchantCategoryMask(Item* item)
                 continue;
             case ITEM_MOD_BLOCK_RATING:
             case ITEM_MOD_BLOCK_VALUE:
-                isTankShielder = true;
+                isTank = true;
                 continue;
             case ITEM_MOD_STAMINA:
             case ITEM_MOD_HEALTH:
@@ -504,102 +377,74 @@ uint32 getItemEnchantCategoryMask(Item* item)
                 continue;
         }
     }
+    std::vector<Attributes> attributesMeleeStrDps;
+    std::vector<Attributes> attributesMeleeStrTank;
+    std::vector<Attributes> attributesMeleeAgiDps;
+    std::vector<Attributes> attributesMeleeAgiTank;
+    std::vector<Attributes> attributesRangedAgi;
+    std::vector<Attributes> attributesCaster;
+    std::vector<EnchantCategory> enchCatsMeleeStrDps;
+    std::vector<EnchantCategory> enchCatsMeleeStrTank;
+    std::vector<EnchantCategory> enchCatsMeleeAgiDps;
+    std::vector<EnchantCategory> enchCatsMeleeAgiTank;
+    std::vector<EnchantCategory> enchCatsRangedAgi;
+    std::vector<EnchantCategory> enchCatsCaster;
 
-    std::vector<EnchantCategory> enchCatsAgi;
-    std::vector<EnchantCategory> enchCatsStr;
-    std::vector<EnchantCategory> enchCatsInt;
-    std::vector<EnchantCategory> enchCatsHealer;
-    std::vector<EnchantCategory> enchCatsMelee;
-    std::vector<EnchantCategory> enchCatsRanged;
-    std::vector<EnchantCategory> enchCatsSpellDmg;
-    std::vector<EnchantCategory> enchCatsTank;
-    std::vector<EnchantCategory> enchCatsTankShielder;
+    auto itemPlayerLevel = getItemPlayerLevel(item);
     switch (item->GetTemplate()->Class)
     {
         case ITEM_CLASS_ARMOR:
             switch (item->GetTemplate()->SubClass)
             {
-                case ITEM_SUBCLASS_ARMOR_MISC:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
-                    break;
                 case ITEM_SUBCLASS_ARMOR_CLOTH:
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_LEATHER:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT});
+                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
+                    if (itemPlayerLevel < 40)
+                    {
+                        attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPELLPOWER});
+                        attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                        enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
+                    }
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_MAIL:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    if (itemPlayerLevel < 40)
+                    {
+                        attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                        attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                        enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                        enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    }
+                    else
+                    {
+                        attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_SPELLPOWER});
+                        attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                        enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                        enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
+                    }
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_PLATE:
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
+                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_SHIELD:
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_NATURE_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    break;
-                case ITEM_SUBCLASS_ARMOR_LIBRAM:
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsTankShielder.insert(enchCatsTankShielder.end(), {ENCH_CAT_TANK_SHIELD_BLOCK});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    break;
-                case ITEM_SUBCLASS_ARMOR_IDOL:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_NATURE_DMG,ENCH_CAT_ARCANE_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    break;
-                case ITEM_SUBCLASS_ARMOR_TOTEM:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    break;
-                case ITEM_SUBCLASS_ARMOR_SIGIL:
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
             }
             break;
@@ -614,40 +459,56 @@ uint32 getItemEnchantCategoryMask(Item* item)
                 case ITEM_SUBCLASS_WEAPON_SWORD2:
                 case ITEM_SUBCLASS_WEAPON_POLEARM:
                 case ITEM_SUBCLASS_WEAPON_DAGGER:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
+                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
+                    attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
+                    enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_WEAPON_BOW:
                 case ITEM_SUBCLASS_WEAPON_GUN:
                 case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsRanged.insert(enchCatsRanged.end(), {ENCH_CAT_RANGED});
+                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
+                    attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
+                    enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
                     break;
                 case ITEM_SUBCLASS_WEAPON_FIST:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_FROST_DMG,ENCH_CAT_NATURE_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
+                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
                     break;
                 case ITEM_SUBCLASS_WEAPON_THROWN:
-                    enchCatsAgi.insert(enchCatsAgi.end(), {ENCH_CAT_AGILITY});
-                    enchCatsStr.insert(enchCatsStr.end(), {ENCH_CAT_STRENGTH});
-                    enchCatsTank.insert(enchCatsTank.end(), {ENCH_CAT_TANK_DEFENSE});
-                    enchCatsMelee.insert(enchCatsMelee.end(), {ENCH_CAT_MELEE});
+                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
+                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
                     break;
                 case ITEM_SUBCLASS_WEAPON_WAND:
-                    enchCatsInt.insert(enchCatsInt.end(), {ENCH_CAT_INTELLECT});
-                    enchCatsHealer.insert(enchCatsHealer.end(), {ENCH_CAT_HEALER});
-                    enchCatsSpellDmg.insert(enchCatsSpellDmg.end(), {ENCH_CAT_CASTER,ENCH_CAT_HOLY_DMG,ENCH_CAT_SHADOW_DMG,ENCH_CAT_FROST_DMG,ENCH_CAT_FIRE_DMG,ENCH_CAT_ARCANE_DMG});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_WEAPON_SPEAR:
                 case ITEM_SUBCLASS_WEAPON_obsolete:
@@ -661,279 +522,209 @@ uint32 getItemEnchantCategoryMask(Item* item)
             break;
     }
     std::vector<EnchantCategory> itmEnchCats;
-    bool noStats = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
-    bool hasOnlyMainStat = (hasMainStatAgi || hasMainStatStr || hasMainStatInt)  && !isHealer && !isMelee && !isRanged && !isSpellDmg && !isTank && !isTankShielder;
-    bool hasOnlySubStat = !hasMainStatAgi && !hasMainStatStr && !hasMainStatInt && (isHealer || isMelee || isRanged || isSpellDmg || isTank || isTankShielder);
+    std::vector<Attributes> itemAttrs;
+    struct retVals {
+        uint32 enchCatMask, attrMask;
+    };
+    bool noStats = !isRanged && !isMelee && !isPhysDPS && !isStr && !isAgi && !isTank && !isCaster;
     if (config_debug)
     {
         LOG_INFO("module", "RANDOM_ENCHANT: Getting item enchant mask, checks below:");
         LOG_INFO("module", "       For item {}, Item ID is: {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId);
-        LOG_INFO("module", "                hasMainStatAgi = {}", hasMainStatAgi);
-        LOG_INFO("module", "                hasMainStatStr = {}", hasMainStatStr);
-        LOG_INFO("module", "                hasMainStatInt = {}", hasMainStatInt);
-        LOG_INFO("module", "                isHealer = {}", isHealer);
-        LOG_INFO("module", "                isMelee = {}", isMelee);
-        LOG_INFO("module", "                isRanged = {}", isRanged);
-        LOG_INFO("module", "                isSpellDmg = {}", isSpellDmg);
-        LOG_INFO("module", "                isTank = {}", isTank);
-        LOG_INFO("module", "                isTankShielder = {}", isTankShielder);
+        LOG_INFO("module", "                isRanged = {}", isRanged); 
+        LOG_INFO("module", "                isMelee = {}", isMelee); 
+        LOG_INFO("module", "                isPhysDPS = {}", isPhysDPS); 
+        LOG_INFO("module", "                isStr = {}", isStr); 
+        LOG_INFO("module", "                isAgi = {}", isAgi); 
+        LOG_INFO("module", "                isTank = {}", isTank); 
+        LOG_INFO("module", "                isCaster = {}", isCaster); 
         LOG_INFO("module", "                noStats = {}", noStats);
-        LOG_INFO("module", "                hasOnlyMainStat = {}", hasOnlyMainStat);
-        LOG_INFO("module", "                hasOnlySubStat = {}", hasOnlySubStat);
     }
     if (noStats) {
         // If no stats, we add every item category from the item classes (armour type, weapon weapon type etc etc).
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsAgi.begin(), enchCatsAgi.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsStr.begin(), enchCatsStr.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsInt.begin(), enchCatsInt.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsHealer.begin(), enchCatsHealer.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMelee.begin(), enchCatsMelee.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsRanged.begin(), enchCatsRanged.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsSpellDmg.begin(), enchCatsSpellDmg.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsTank.begin(), enchCatsTank.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsTankShielder.begin(), enchCatsTankShielder.end());
-        return getEnchantCategoryMask(itmEnchCats);
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrDps.begin(), attributesMeleeStrDps.end());
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrTank.begin(), attributesMeleeStrTank.end());
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiDps.begin(), attributesMeleeAgiDps.end());
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiTank.begin(), attributesMeleeAgiTank.end());
+        itemAttrs.insert(itemAttrs.end(), attributesRangedAgi.begin(), attributesRangedAgi.end());
+        itemAttrs.insert(itemAttrs.end(), attributesCaster.begin(), attributesCaster.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrDps.begin(), enchCatsMeleeStrDps.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrTank.begin(), enchCatsMeleeStrTank.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiDps.begin(), enchCatsMeleeAgiDps.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiTank.begin(), enchCatsMeleeAgiTank.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsRangedAgi.begin(), enchCatsRangedAgi.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsCaster.begin(), enchCatsCaster.end());
+        return retVals{getEnchantCategoryMask(itmEnchCats), getAttributeMask(itemAttrs)};
     }
-    // Below, we ensure that item roles that only have either main stat or substat, if they're missing them.
-    // this is going by a very simple heuristic, but may end up being not entirely useful after all
-    if (hasOnlyMainStat)
+
+    bool isMeleeStrDPS = (isMelee || isPhysDPS) && isStr;
+    bool isMeleeStrTank = isTank && isStr;
+    bool isMeleeAgiDPS = (isMelee || isPhysDPS) && isAgi;
+    bool isMeleeAgiTank = isTank && isAgi;
+    bool isRangedAgi = (isRanged || isPhysDPS) && isAgi;
+    if (isStr && !isMeleeStrDPS && !isMeleeStrTank)
     {
-        if (hasMainStatAgi)
-        {
-            isMelee = true;
-            isRanged = true;
-            isTank = true;
-        }
-        if (hasMainStatStr)
-        {
-            isMelee = true;
-            isTank = true;
-            isTankShielder = true;
-        }
-        if (hasMainStatInt)
-        {
-            isHealer = true;
-            isSpellDmg = true;
-        }
+        // Has str but no general melee or tank stats, set both
+        isMeleeStrDPS = true;
+        isMeleeStrTank = true;
     }
-    else if (hasOnlySubStat)
+    if (isAgi && !isMeleeAgiDPS && !isMeleeAgiTank)
     {
-        if (isHealer || isSpellDmg)
+        // Has agi but no general melee or tank stats, set both
+        isMeleeAgiDPS = true;
+        isMeleeAgiTank = true;
+    }
+    if (!isStr && !isAgi)
+    {
+        // No main stat for str and agi
+        if (isMelee)
         {
-            hasMainStatInt = true;
+            isMeleeStrDPS = true;
+            isMeleeAgiDPS = true;
         }
-        if (isMelee || isRanged || isTank)
+        if (isTank)
         {
-            hasMainStatAgi = true;
-            hasMainStatStr = true;
+            isMeleeStrTank = true;
+            isMeleeAgiTank = true;
         }
-        if (isTankShielder)
+        if (isPhysDPS)
         {
-            hasMainStatStr = true;
+            isMeleeStrDPS = true;
+            isMeleeAgiDPS = true;
+            isRangedAgi = true;
+        }
+        if (isRanged)
+        {
+            isRangedAgi = true;
         }
     }
-    // Add item categories by item's stats
-    if (hasMainStatAgi) { itmEnchCats.insert(itmEnchCats.end(), enchCatsAgi.begin(), enchCatsAgi.end()); }
-    if (hasMainStatStr) { itmEnchCats.insert(itmEnchCats.end(), enchCatsStr.begin(), enchCatsStr.end()); }
-    if (hasMainStatInt) { itmEnchCats.insert(itmEnchCats.end(), enchCatsInt.begin(), enchCatsInt.end()); }
-    if (isHealer) { itmEnchCats.insert(itmEnchCats.end(), enchCatsHealer.begin(), enchCatsHealer.end()); }
-    if (isMelee) { itmEnchCats.insert(itmEnchCats.end(), enchCatsMelee.begin(), enchCatsMelee.end()); }
-    if (isRanged) { itmEnchCats.insert(itmEnchCats.end(), enchCatsRanged.begin(), enchCatsRanged.end()); }
-    if (isSpellDmg) { itmEnchCats.insert(itmEnchCats.end(), enchCatsSpellDmg.begin(), enchCatsSpellDmg.end()); }
-    if (isTank) { itmEnchCats.insert(itmEnchCats.end(), enchCatsTank.begin(), enchCatsTank.end()); }
-    if (isTankShielder) { itmEnchCats.insert(itmEnchCats.end(), enchCatsTankShielder.begin(), enchCatsTankShielder.end()); }
-    return getEnchantCategoryMask(itmEnchCats);
+
+    if (isCaster)
+    {
+        itemAttrs.insert(itemAttrs.end(), attributesCaster.begin(), attributesCaster.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsCaster.begin(), enchCatsCaster.end());
+    }
+    if (isMeleeStrDPS)
+    {
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrDps.begin(), attributesMeleeStrDps.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrDps.begin(), enchCatsMeleeStrDps.end());
+    }
+    if (isMeleeStrTank)
+    {
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrTank.begin(), attributesMeleeStrTank.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrTank.begin(), enchCatsMeleeStrTank.end());
+    }
+    if (isMeleeAgiDPS)
+    {
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiDps.begin(), attributesMeleeAgiDps.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiDps.begin(), enchCatsMeleeAgiDps.end());
+    }
+    if (isMeleeAgiTank)
+    {
+        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiTank.begin(), attributesMeleeAgiTank.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiTank.begin(), enchCatsMeleeAgiTank.end());
+    }
+    if (isRangedAgi)
+    {
+        itemAttrs.insert(itemAttrs.end(), attributesRangedAgi.begin(), attributesRangedAgi.end());
+        itmEnchCats.insert(itmEnchCats.end(), enchCatsRangedAgi.begin(), enchCatsRangedAgi.end());
+    }
+    return retVals{getEnchantCategoryMask(itmEnchCats), getAttributeMask(itemAttrs)};
 }
 
-uint32 getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
+auto getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
 {
-    if(config_roll_player_class_preference && player && isItemPlayerClassPreference(player, item))
+    struct retVals {
+        uint32 enchCatMask, attrMask;
+    };
+    if (player->CanUseItem(item, false) == EQUIP_ERR_OK)
     {
         if (config_debug)
         {
-            LOG_INFO("module", "RANDOM_ENCHANT: Getting player class preference");
+            LOG_INFO("module", "RANDOM_ENCHANT: Getting player class preference for enchant category");
         }
-        return getPlayerEnchantCategoryMask(player);
+        auto [enchMask, attrMask] = getPlayerEnchantCategoryMask(player);
+        return retVals{enchMask, attrMask};
     }
     if (config_debug)
     {
         LOG_INFO("module", "RANDOM_ENCHANT: Getting item enchant category");
     }
-    return getItemEnchantCategoryMask(item);
+    auto [enchMask, attrMask] = getItemEnchantCategoryMask(item);
+    return retVals{enchMask, attrMask};
 }
 
 // END UTILS
 
 // MAIN GET ROLL ENCHANT FUNCTIONS
 
-int getRandomEnchantment_New(Item* item, Player* player = nullptr)
+int32 getCustomRandomSuffix(int enchantQuality, Item* item, Player* player = nullptr)
 {
     uint32 Class = item->GetTemplate()->Class;
     uint32 subclassMask = 1 << item->GetTemplate()->SubClass;
     int level = getLevelOffset(item, player);
-    uint32 enchantCategoryMask = getPlayerItemEnchantCategoryMask(item, player);
+    auto [enchantCategoryMask, attrMask] = getPlayerItemEnchantCategoryMask(item, player);
 
     int maxCount = 50;
     while (maxCount > 0)
     {
-    QueryResult qr = WorldDatabase.Query(R"(select ID from item_enchantment_random_tiers_NEW WHERE
-MinLevel <= {} and {} <= MaxLevel AND
-(
-ItemClass is NULL OR
-ItemClass = {} AND ItemSubClassMask is NULL OR
-ItemClass = {} AND ItemSubClassMask & {} > 0
-) AND
-(
-EnchantCategory is NULL OR
-EnchantCategory & {} > 0
-) ORDER BY RAND() LIMIT 1)", level, level, Class, Class, subclassMask, enchantCategoryMask);
+    QueryResult qr = WorldDatabase.Query(R"(SELECT ID FROM item_enchantment_random_suffixes
+INNER JOIN itemrandomsuffix_dbc ON
+item_enchantment_random_suffixes.SuffixID = itemrandomsuffix_dbc.ID
+WHERE
+((MinLevel <= {} AND {} <= MaxLevel) OR (MinLevel = 0 AND MaxLevel = 0))
+AND (
+(ItemClass = 0) OR
+(ItemClass = {} AND ItemSubClassMask = 0) OR
+(ItemClass = {} AND ItemSubClassMask & {} > 0)
+)
+AND EnchantQuality = {}
+AND (
+  (AttributeMask = 0) OR
+  ((AttributeMask & {} > 0) AND (AttributeMask & ~{} = 0))
+)
+AND (
+  (EnchantCategoryMask = 0) OR
+  (EnchantCategoryMask & {} > 0)
+) ORDER BY RAND() LIMIT 1)", level, level, Class, Class, subclassMask, enchantQuality, attrMask, attrMask, enchantCategoryMask);
         if (qr)
         {
-            int enchID = qr->Fetch()[0].Get<uint32>();
+            int suffixID = qr->Fetch()[0].Get<uint32>();
+            ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(-suffixID);
+            if (!item_rand)
+            {
+                LOG_INFO("module", "Suffix ID does not exist to be enchanted, getting a new one: {}", suffixID);
+                continue;
+            }
             if (config_debug)
             {
                 LOG_INFO("module", "RANDOM_ENCHANT: Query with the following params:");
-                LOG_INFO("module", "                level {}, item_class {}, subclassmask {}, enchCatMask {}", level, Class, subclassMask, enchantCategoryMask);
-                LOG_INFO("module", "                Return was: {}", enchID);
+                LOG_INFO("module", "                level {}, enchantQuality {}, item_class {}, subclassmask {}, enchCatMask {}, attrMask {}", level, enchantQuality, Class, subclassMask, enchantCategoryMask, attrMask);
+                LOG_INFO("module", "                Return was: {}", suffixID);
             }
-            if (
-                player &&
-                !playerHasSkillRequirementForEnchant(player, enchID) &&
-                !playerHasLevelRequirementForEnchant(player, enchID)
-            )
-            {
-                // If a player is available, we check if the user can use the enchant
-                continue;
-            }
-            return enchID;
+            return suffixID;
         }
-        // get rand enchant ID failed for some reason, should not happen, we still just continue and try to get
+        // get suffixID failed for some reason, should not happen, we still just continue and try to get
         // another one.
         maxCount--;
     }
     return -1;
 }
 
-int getRandEnchantment(Item* item)
+int GetRolledEnchantLevel()
 {
-    uint32 Class = item->GetTemplate()->Class;
-    std::string ClassQueryString = "";
-    switch (Class)
+    int currentTier = -1;
+    for (auto rollpct: config_enchant_pcts)
     {
-    case 2:
-        ClassQueryString = "WEAPON";
-        break;
-    case 4:
-        ClassQueryString = "ARMOR";
-        break;
-    }
-    if (ClassQueryString == "")
-        return -1;
-    uint32 Quality = item->GetTemplate()->Quality;
-    int rarityRoll = -1;
-    switch (Quality)
-    {
-    case 0://grey
-        rarityRoll = rand_norm() * 25;
-        break;
-    case 1://white
-        rarityRoll = rand_norm() * 50;
-        break;
-    case 2://green
-        rarityRoll = 45 + (rand_norm() * 20);
-        break;
-    case 3://blue
-        rarityRoll = 65 + (rand_norm() * 15);
-        break;
-    case 4://purple
-        rarityRoll = 80 + (rand_norm() * 14);
-        break;
-    case 5://orange
-        rarityRoll = 93;
-        break;
-    }
-    if (rarityRoll < 0)
-        return -1;
-    int tier = 0;
-    if (rarityRoll <= 44)
-        tier = 1;
-    else if (rarityRoll <= 64)
-        tier = 2;
-    else if (rarityRoll <= 79)
-        tier = 3;
-    else if (rarityRoll <= 92)
-        tier = 4;
-    else
-        tier = 5;
-
-    int maxCount = 20;
-    while (maxCount > 0)
-    {
-        QueryResult qr = WorldDatabase.Query("SELECT enchantID FROM item_enchantment_random_tiers WHERE tier='{}' AND exclusiveSubClass=NULL AND class='{}' OR exclusiveSubClass='{}' OR class='ANY' ORDER BY RAND() LIMIT 1", tier, ClassQueryString.c_str(), item->GetTemplate()->SubClass);
-        if (qr)
-        {
-            return qr->Fetch()[0].Get<uint32>();
-        }
-        // get rand enchant ID failed for some reason, should not happen, we still just continue and try to get
-        // another one.
-        maxCount--;
-    }
-    return -1;
-}
-
-std::vector<EnchantmentSlot> GetAvailableEnchantSlots(Item* item)
-{
-    std::vector<EnchantmentSlot> availableSlots;
-    for (auto slot : default_allowed_rand_enchant_slots)
-    {
-        if (!item->GetEnchantmentId(slot))
-        {
-            // Add slots that dont have an enchantment slot
-            availableSlots.push_back(slot);
-        }
-    }
-    return availableSlots;
-}
-
-// // HasBeenTouchedByRandomEnchantMod is a hack-ish way to check if an item has possibly been touched by this mod
-// // The usual blizzlike Azerothcore logic for random enchants using PROP_ENCHANTMENT_SLOT_{0,1,2,3,4} is that
-// // PROP_ENCHANTMENT_SLOT_{0,1,2} will usually be touched by enchants from the `acore_world`.`item_enchantment_template`
-// // table
-// // This usually leaves PROP_ENCHANTMENT_SLOT_{3,4} empty, which is probably an indicator that the item has been touched
-// // by this mod as this is the first enchant we'll populate.
-// bool HasBeenTouchedByRandomEnchantMod(Item* item)
-// {
-//     return item->GetEnchantmentId(PROP_ENCHANTMENT_SLOT_4);
-// }
-
-std::vector<std::pair<uint32, EnchantmentSlot>> GetRolledEnchants(Item* item, Player* player = nullptr)
-{
-    std::vector<EnchantmentSlot> availableSlots = GetAvailableEnchantSlots(item);
-    std::vector<std::pair<uint32, EnchantmentSlot>> rolledEnchants;
-    
-    for (std::size_t i = 0; i < availableSlots.size(); ++i)
-    {
-        auto slot = availableSlots[i];
-        float rollpct = config_enchant_pcts[i];
-        float roll = (float)rand_chance();
+        double roll = (float)rand_chance();
         if (roll + rollpct < 100.0)
         {
             // If roll was not successful, we break, no more attempted rolls beyond this;
             break;
         }
-        int randEnch = -1;
-        if (config_use_new_random_enchant_system)
-        {
-            randEnch = getRandomEnchantment_New(item, player);
-        } else {
-            randEnch = getRandEnchantment(item);
-        }
-        if (randEnch > 0)
-        {
-            rolledEnchants.push_back(std::make_pair((uint32)randEnch, slot));
-        }
+        currentTier++;
     }
-    return rolledEnchants;
+    return currentTier;
 }
 
 void RollPossibleEnchant(Player* player, Item* item)
@@ -941,36 +732,55 @@ void RollPossibleEnchant(Player* player, Item* item)
     uint32 Quality = item->GetTemplate()->Quality;
     uint32 Class = item->GetTemplate()->Class;
 
+    switch (item->GetTemplate()->InventoryType)
+    {
+        // Dont roll if its of these types (Taken from GenerateEnchSuffixFactor)
+        // Items of that type don`t have points
+        case INVTYPE_NON_EQUIP:
+        case INVTYPE_BAG:
+        case INVTYPE_TABARD:
+        case INVTYPE_AMMO:
+        case INVTYPE_QUIVER:
+        case INVTYPE_RELIC:
+            return;
+    }
     if (
-        (Quality > 5 || Quality < 1) /* eliminates enchanting anything that isn't a recognized quality */ ||
-        (Class != 2 && Class != 4) /* eliminates enchanting anything but weapons/armor */)
+        (Quality > ITEM_QUALITY_LEGENDARY || Quality < ITEM_QUALITY_UNCOMMON) /* eliminates enchanting anything that isn't a recognized quality */ ||
+        (Class != ITEM_CLASS_WEAPON && Class != ITEM_CLASS_ARMOR) /* eliminates enchanting anything but weapons/armor */)
     {
         return;
     }
 
-    std::vector<std::pair<uint32, EnchantmentSlot>> rolledEnchants = GetRolledEnchants(item, player);
-    int numActualEnchants = 0;
-    for (auto const& [enchID, enchSlot] : rolledEnchants)
+    if (item->GetItemRandomPropertyId() != 0)
     {
-        if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
-        {
-            player->ApplyEnchantment(item, enchSlot, false);
-            item->SetEnchantment(enchSlot, enchID, 0, 0);
-            player->ApplyEnchantment(item, enchSlot, true);
-            numActualEnchants++;
-        }
+        // If already have enchant, we shouldnt apply a new one
+        return;
     }
+
+    auto rolledEnchantLevel = GetRolledEnchantLevel();
+    if (rolledEnchantLevel < 0)
+    {
+        // Failed roll
+        return;
+    }
+    auto suffixID = getCustomRandomSuffix(rolledEnchantLevel, item, player);
+    // Apply the suffix to the item
+    ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(-suffixID);
+    if (!item_rand)
+    {
+        return;
+    }
+    item->SetItemRandomProperties(-suffixID);
     ChatHandler chathandle = ChatHandler(player->GetSession());
-    if (numActualEnchants > 0)
-    {
-        chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 %d |rrandom enchantments!", item->GetTemplate()->Name1.c_str(), numActualEnchants);
-    }
+    uint32 loc = forPlayer->GetSession()->GetSessionDbLocaleIndex();
+    std::string suffixName = item_rand->Name[loc];
+    chathandle.PSendSysMessage(
+        "|cffFF0000 %s |rhas rolled the suffix|cffFF0000 %s |r!",
+        item->GetTemplate()->Name1.c_str(), suffixName,
+    );
 }
 
 // END MAIN GET ROLL ENCHANTS FUNCTIONS
-
-int32 tmp_test_rnd_ench1 = 32000;
-int32 tmp_test_rnd_ench2 = -2000;
 
 class RandomEnchantsWorldScript : public WorldScript
 {
@@ -987,17 +797,12 @@ public:
         config_on_group_roll_reward_item = sConfigMgr->GetOption<bool>("RandomEnchants.OnGroupRollRewardItem", default_on_group_roll_reward_item);
         config_on_vendor_purchase = sConfigMgr->GetOption<bool>("RandomEnchants.OnVendorPurchase", default_on_vendor_purchase);
         // config_on_all_items_created = sConfigMgr->GetOption<bool>("RandomEnchants.OnAllItemsCreated", default_on_all_items_created);
-        config_use_new_random_enchant_system = sConfigMgr->GetOption<bool>("RandomEnchants.UseNewRandomEnchantSystem", default_use_new_random_enchant_system);
         config_roll_player_class_preference =  sConfigMgr->GetOption<bool>("RandomEnchants.RollPlayerClassPreference", default_roll_player_class_preference);
         config_login_message = sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", default_login_message);
         config_enchant_pcts[0] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.1", default_enchant_pcts[0]);
         config_enchant_pcts[1] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.2", default_enchant_pcts[1]);
         config_enchant_pcts[2] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.3", default_enchant_pcts[2]);
         config_enchant_pcts[3] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.4", default_enchant_pcts[3]);
-        config_enchant_pcts[4] = sConfigMgr->GetOption<float>("RandomEnchants.RollPercentage.5", default_enchant_pcts[4]);
-
-        tmp_test_rnd_ench1 = sConfigMgr->GetOption<int32>("RandomEnchants.TmpEnch1", 32000);
-        tmp_test_rnd_ench2 = sConfigMgr->GetOption<int32>("RandomEnchants.TmpEnch2", -2000);
     }
 };
 
@@ -1010,8 +815,6 @@ public:
         if (config_announce_on_log)
         {
             ChatHandler(player->GetSession()).SendSysMessage(config_login_message);
-            ChatHandler(player->GetSession()).PSendSysMessage("its currently configured random enchant1 is: %d", tmp_test_rnd_ench1);
-            ChatHandler(player->GetSession()).PSendSysMessage("its currently configured random enchant2 is: %d", tmp_test_rnd_ench2);
         }
     }
     void OnStoreNewItem(Player* player, Item* item, uint32 /*count*/) override
@@ -1041,32 +844,6 @@ public:
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_vendor_purchase)
         {
-            // Enchanting on guild tabard
-            // Enchanting on dalaran great axe
-            if (item->GetTemplate()->ItemId == 5976 || item->GetTemplate()->ItemId == 44640)
-            {
-                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", tmp_test_rnd_ench1);
-                item->SetItemRandomProperties(tmp_test_rnd_ench1);
-                return;
-            }
-            if (item->GetTemplate()->ItemId == 12249) // Merciless Axe
-            {
-                LOG_INFO("module", "RANDOM_ENCHANT: Enchanting with custom hardcoded entry: {}", tmp_test_rnd_ench2);
-                item->SetItemRandomProperties(tmp_test_rnd_ench2);
-                for (auto slot : default_allowed_rand_enchant_slots)
-                {
-                    auto enchID = item->GetEnchantmentId(slot);
-                    LOG_INFO("module", "RANDOM_ENCHANT: enchant slot: {}; enchant: {}", tmp_test_rnd_ench2, enchID);
-                }
-                // if (sSpellItemEnchantmentStore.LookupEntry(enchID))//Make sure enchantment id exists
-                // {
-                //     player->ApplyEnchantment(item, enchSlot, false);
-                //     item->SetEnchantment(enchSlot, enchID, 0, 0);
-                //     player->ApplyEnchantment(item, enchSlot, true);
-                //     numActualEnchants++;
-                // }
-                return;
-            }
             RollPossibleEnchant(player, item);
         }
     }

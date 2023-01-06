@@ -14,7 +14,7 @@
 .DS_Store
 CMakeLists.txt.user
 *.bak
-*.patch
+# *.patch
 *.diff
 *.REMOTE.*
 *.BACKUP.*
