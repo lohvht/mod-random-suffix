@@ -690,10 +690,13 @@ AND (
         if (qr)
         {
             int suffixID = qr->Fetch()[0].Get<uint32>();
-            ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(-suffixID);
+            ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(suffixID);
             if (!item_rand)
             {
                 LOG_INFO("module", "Suffix ID does not exist to be enchanted, getting a new one: {}", suffixID);
+                // get suffixID failed for some reason, should not happen, we still just continue and try to get
+                // another one.
+                maxCount--;
                 continue;
             }
             if (config_debug)
@@ -704,9 +707,6 @@ AND (
             }
             return suffixID;
         }
-        // get suffixID failed for some reason, should not happen, we still just continue and try to get
-        // another one.
-        maxCount--;
     }
     return -1;
 }
@@ -765,7 +765,7 @@ void RollPossibleEnchant(Player* player, Item* item)
     }
     auto suffixID = getCustomRandomSuffix(rolledEnchantLevel, item, player);
     // Apply the suffix to the item
-    ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(-suffixID);
+    ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(suffixID);
     if (!item_rand)
     {
         return;
