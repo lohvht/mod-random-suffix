@@ -637,7 +637,7 @@ auto getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
     struct retVals {
         uint32 enchCatMask, attrMask;
     };
-    if (player->CanUseItem(item, false) == EQUIP_ERR_OK)
+    if (config_roll_player_class_preference && player->CanUseItem(item, false) == EQUIP_ERR_OK)
     {
         if (config_debug)
         {
@@ -662,7 +662,8 @@ int32 getCustomRandomSuffix(int enchantQuality, Item* item, Player* player = nul
 {
     uint32 Class = item->GetTemplate()->Class;
     uint32 subclassMask = 1 << item->GetTemplate()->SubClass;
-    int level = getLevelOffset(item, player);
+    // int level = getLevelOffset(item, player);
+    int level = getItemPlayerLevel(item);
     auto [enchantCategoryMask, attrMask] = getPlayerItemEnchantCategoryMask(item, player);
 
     int maxCount = 50;
@@ -699,6 +700,23 @@ AND (
                 maxCount--;
                 continue;
             }
+            uint32 minAllocPct = 1000000000000;
+            for (uint8 k = 0; k != MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
+            {
+                if (minAllocPct > item_rand->AllocationPct[k])
+                {
+                    minAllocPct = item_rand->AllocationPct[k];
+                }
+            }
+            int32 basepoints = int32((minAllocPct * item->GetItemSuffixFactor()) / 10000);
+            if (basepoints < 1)
+            {
+                // Suffix ID should ideally be above 1 after suffix factor calculations
+                // This is so that when presented on the client we dont get some weird looking values
+                LOG_INFO("module", "Suffix min alloc pct calculation is below one, getting a new one: {}", suffixID);
+                maxCount--;
+                continue;
+            }
             if (config_debug)
             {
                 LOG_INFO("module", "RANDOM_ENCHANT: Query with the following params:");
@@ -708,6 +726,7 @@ AND (
             return suffixID;
         }
     }
+    LOG_INFO("module", "rerolled rolls a max number of times already times, but no candidate enchants, returning without a suffix");
     return -1;
 }
 
@@ -764,6 +783,10 @@ void RollPossibleEnchant(Player* player, Item* item)
         return;
     }
     auto suffixID = getCustomRandomSuffix(rolledEnchantLevel, item, player);
+    if (suffixID < 0)
+    {
+        return;
+    }
     // Apply the suffix to the item
     ItemRandomSuffixEntry const* item_rand = sItemRandomSuffixStore.LookupEntry(suffixID);
     if (!item_rand)
