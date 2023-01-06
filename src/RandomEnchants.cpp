@@ -703,6 +703,12 @@ AND (
             uint32 minAllocPct = 3567587328;
             for (uint8 k = 0; k != MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
             {
+                if (item_rand->AllocationPct[k] < 100)
+                {
+                    // NOTE: Any value set below 100, is either a 0, or a 1, which is used to denote either not set,
+                    // or set but not really a stat ench, this is *Hardcoded*.
+                    continue;
+                }
                 if (minAllocPct > item_rand->AllocationPct[k])
                 {
                     minAllocPct = item_rand->AllocationPct[k];
@@ -712,7 +718,7 @@ AND (
             int32 basepoints = int32(minAllocPct * suffFactor / 10000);
             if (basepoints < 1)
             {
-                // Suffix ID should ideally be above 1 after suffix factor calculations
+                // Suffix points should ideally be above 1 after suffix factor calculations
                 // This is so that when presented on the client we dont get some weird looking values
                 LOG_INFO("module", "Suffix min alloc pct calculation is below one, getting a new one: suffID: {}, suffFactor: {}, minAllocPct: {}", suffixID, suffFactor, minAllocPct);
                 maxCount--;
