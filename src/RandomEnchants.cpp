@@ -708,8 +708,8 @@ AND (
                     minAllocPct = item_rand->AllocationPct[k];
                 }
             }
-            auto suffFactor = GenerateEnchSuffixFactor(item->GetTemplate()->ItemId)); 
-            int32 basepoints = int32((minAllocPct * suffFactor / 10000);
+            auto suffFactor = GenerateEnchSuffixFactor(item->GetTemplate()->ItemId); 
+            int32 basepoints = int32(minAllocPct * suffFactor / 10000);
             if (basepoints < 1)
             {
                 // Suffix ID should ideally be above 1 after suffix factor calculations
