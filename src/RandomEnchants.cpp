@@ -774,10 +774,7 @@ void RollPossibleEnchant(Player* player, Item* item)
     ChatHandler chathandle = ChatHandler(player->GetSession());
     uint32 loc = player->GetSession()->GetSessionDbLocaleIndex();
     std::string suffixName = item_rand->Name[loc];
-    chathandle.PSendSysMessage(
-        "|cffFF0000 %s |rhas rolled the suffix|cffFF0000 %s |r!",
-        item->GetTemplate()->Name1.c_str(), suffixName,
-    );
+    chathandle.PSendSysMessage("|cffFF0000 %s |rhas rolled the suffix|cffFF0000 %s |r!", item->GetTemplate()->Name1.c_str(), suffixName);
 }
 
 // END MAIN GET ROLL ENCHANTS FUNCTIONS
