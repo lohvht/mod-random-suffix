@@ -700,7 +700,7 @@ AND (
                 maxCount--;
                 continue;
             }
-            uint32 minAllocPct = 1000000000000;
+            uint32 minAllocPct = 3567587328;
             for (uint8 k = 0; k != MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
             {
                 if (minAllocPct > item_rand->AllocationPct[k])
@@ -708,12 +708,13 @@ AND (
                     minAllocPct = item_rand->AllocationPct[k];
                 }
             }
-            int32 basepoints = int32((minAllocPct * item->GetItemSuffixFactor()) / 10000);
+            auto suffFactor = GenerateEnchSuffixFactor(item->GetTemplate()->ItemId)); 
+            int32 basepoints = int32((minAllocPct * suffFactor / 10000);
             if (basepoints < 1)
             {
                 // Suffix ID should ideally be above 1 after suffix factor calculations
                 // This is so that when presented on the client we dont get some weird looking values
-                LOG_INFO("module", "Suffix min alloc pct calculation is below one, getting a new one: {}", suffixID);
+                LOG_INFO("module", "Suffix min alloc pct calculation is below one, getting a new one: suffID: {}, suffFactor: {}, minAllocPct: {}", suffixID, suffFactor, minAllocPct);
                 maxCount--;
                 continue;
             }
