@@ -62,7 +62,7 @@ enum Attributes
     ATTRIBUTE_DEFENSERATING = 11,  
     ATTRIBUTE_DODGE         = 12,  
     ATTRIBUTE_PARRY         = 13,  
-}
+};
 
 // UTILS
 enum EnchantCategory
