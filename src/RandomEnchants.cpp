@@ -703,15 +703,14 @@ AND (
             uint32 minAllocPct = 3567587328;
             for (uint8 k = 0; k != MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
             {
-                if (item_rand->AllocationPct[k] < 100)
+                if (item_rand->AllocationPct[k] > 100)
                 {
                     // NOTE: Any value set below 100, is either a 0, or a 1, which is used to denote either not set,
                     // or set but not really a stat ench, this is *Hardcoded*.
-                    continue;
-                }
-                if (minAllocPct > item_rand->AllocationPct[k])
-                {
-                    minAllocPct = item_rand->AllocationPct[k];
+                    if (minAllocPct > item_rand->AllocationPct[k])
+                    {
+                        minAllocPct = item_rand->AllocationPct[k];
+                    }
                 }
             }
             auto suffFactor = GenerateEnchSuffixFactor(item->GetTemplate()->ItemId); 
