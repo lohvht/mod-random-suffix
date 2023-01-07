@@ -396,6 +396,20 @@ auto getItemEnchantCategoryMask(Item* item)
         case ITEM_CLASS_ARMOR:
             switch (item->GetTemplate()->SubClass)
             {
+                case ITEM_SUBCLASS_ARMOR_MISC:
+                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
+                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
+                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
+                    attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
+                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
+                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
+                    enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
+                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
+                    break;
                 case ITEM_SUBCLASS_ARMOR_CLOTH:
                     attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                     enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
@@ -412,6 +426,10 @@ auto getItemEnchantCategoryMask(Item* item)
                         attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                         enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
                     }
+                    if (isStr || isRanged || isMelee || isPhysDPS || isTank)
+                    {
+                        isAgi = true;
+                    }
                     enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
                     break;
                 case ITEM_SUBCLASS_ARMOR_MAIL:
@@ -421,6 +439,10 @@ auto getItemEnchantCategoryMask(Item* item)
                         attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
                         enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
                         enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
+                        if (isAgi || isMelee || isPhysDPS || isTank)
+                        {
+                            isStr = true;
+                        }
                     }
                     else
                     {
@@ -428,6 +450,10 @@ auto getItemEnchantCategoryMask(Item* item)
                         attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                         enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
                         enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
+                        if (isStr || isRanged || isMelee || isPhysDPS || isTank)
+                        {
+                            isAgi = true;
+                        }
                     }
                     attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                     enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
@@ -439,12 +465,20 @@ auto getItemEnchantCategoryMask(Item* item)
                     enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
                     enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
                     enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
+                    if (isAgi || isMelee || isPhysDPS || isTank)
+                    {
+                        isStr = true;
+                    }
                     break;
                 case ITEM_SUBCLASS_ARMOR_SHIELD:
                     attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
                     attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                     enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
                     enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
+                    if (isAgi || isMelee || isPhysDPS || isTank)
+                    {
+                        isStr = true;
+                    }
                     break;
             }
             break;
@@ -731,6 +765,10 @@ AND (
             }
             return suffixID;
         }
+        LOG_INFO("module", "RANDOM_ENCHANT: No suffixes found for this combi");
+        LOG_INFO("module", "                level {}, enchantQuality {}, item_class {}, subclassmask {}, enchCatMask {}, attrMask {}", level, enchantQuality, Class, subclassMask, enchantCategoryMask, attrMask);
+        // get suffixID failed for some reason here too. probably no entries.
+        maxCount--;
     }
     LOG_INFO("module", "rerolled rolls a max number of times already times, but no candidate enchants, returning without a suffix");
     return -1;
