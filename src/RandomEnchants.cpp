@@ -659,8 +659,7 @@ auto getItemEnchantCategoryMask(Item* item)
                     // in that case if isLeather is true, isMail will still be set false.
                     isMail = !isLeather;
                     // isEventualMailUserItem check. This checks for actual mail item is above lvl 40 or is leather below level 40.
-                    bool isEventualMailUserItem = !isMail || itemPlayerLevel > 40;
-                    if (isEventualMailUserItem)
+                    if (bool isEventualMailUserItem = !isMail || itemPlayerLevel > 40)
                     {
                         specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
                         specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
