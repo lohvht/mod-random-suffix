@@ -696,7 +696,7 @@ auto getItemEnchantCategoryMask(Item* item)
                 case ITEM_SUBCLASS_ARMOR_SHIELD:
                     isShield = true;
                     specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc);
+                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc));
                     specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
                         specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
