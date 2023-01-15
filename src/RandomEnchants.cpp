@@ -578,7 +578,7 @@ auto itemRoleRoleCheckToClassSpecs_Druid(itemPotentialRoleCheck rc, bool forceAd
         specPool.insert({TALENT_TREE_DRUID_FERAL_COMBAT});
     } else if (rc.isCaster) {
         specPool.insert({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
-    } else (forceAddAll) {
+    } else if (forceAddAll) {
         specPool.insert({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_FERAL_COMBAT,TALENT_TREE_DRUID_RESTORATION});
     }
     return specPool;
