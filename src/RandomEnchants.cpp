@@ -428,16 +428,16 @@ auto itemRoleRoleCheckToClassSpecs_Warrior(itemPotentialRoleCheck rc, bool force
     std::set<uint32> specPool;
     if (itemClass == ITEM_CLASS_ARMOR && itemSubClass == ITEM_SUBCLASS_ARMOR_SHIELD) {
         if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isTank || forceAddAll) {
-            specPool.merge({TALENT_TREE_WARRIOR_PROTECTION});
+            specPool.insert({TALENT_TREE_WARRIOR_PROTECTION});
         }
         return specPool;
     }
     if (rc.isTank) {
-        specPool.merge({TALENT_TREE_WARRIOR_PROTECTION});
+        specPool.insert({TALENT_TREE_WARRIOR_PROTECTION});
     } else if (!rc.isAgi && (rc.isMelee || rc.isPhysDPS)) {
-        specPool.merge({TALENT_TREE_WARRIOR_ARMS, TALENT_TREE_WARRIOR_FURY});
+        specPool.insert({TALENT_TREE_WARRIOR_ARMS, TALENT_TREE_WARRIOR_FURY});
     } else if (rc.isStr || forceAddAll) {
-        specPool.merge({TALENT_TREE_WARRIOR_PROTECTION, TALENT_TREE_WARRIOR_ARMS, TALENT_TREE_WARRIOR_FURY});
+        specPool.insert({TALENT_TREE_WARRIOR_PROTECTION, TALENT_TREE_WARRIOR_ARMS, TALENT_TREE_WARRIOR_FURY});
     }
     return specPool;
 }
@@ -446,28 +446,28 @@ auto itemRoleRoleCheckToClassSpecs_Paladin(itemPotentialRoleCheck rc, bool force
     std::set<uint32> specPool;
     if (itemClass == ITEM_CLASS_ARMOR && itemSubClass == ITEM_SUBCLASS_ARMOR_SHIELD) {
         if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isTank) {
-            specPool.merge({TALENT_TREE_PALADIN_PROTECTION});
+            specPool.insert({TALENT_TREE_PALADIN_PROTECTION});
         } else if (rc.isCaster) {
-            specPool.merge({TALENT_TREE_PALADIN_HOLY});
+            specPool.insert({TALENT_TREE_PALADIN_HOLY});
         } else if (forceAddAll) {
-            specPool.merge({TALENT_TREE_PALADIN_HOLY, TALENT_TREE_PALADIN_PROTECTION});
+            specPool.insert({TALENT_TREE_PALADIN_HOLY, TALENT_TREE_PALADIN_PROTECTION});
         }
         return specPool;
     }
     if (itemInvType == INVTYPE_HOLDABLE) {
         if (rc.isCaster || forceAddAll) {
-            specPool.merge({TALENT_TREE_PALADIN_HOLY});
+            specPool.insert({TALENT_TREE_PALADIN_HOLY});
         }
         return specPool;
     }
     if (rc.isTank) {
-        specPool.merge({TALENT_TREE_PALADIN_PROTECTION});
+        specPool.insert({TALENT_TREE_PALADIN_PROTECTION});
     } else if (rc.isCaster) {
-        specPool.merge({TALENT_TREE_PALADIN_HOLY});
+        specPool.insert({TALENT_TREE_PALADIN_HOLY});
     } else if (!rc.isAgi && (rc.isMelee || rc.isPhysDPS)) {
-        specPool.merge({TALENT_TREE_PALADIN_RETRIBUTION});
+        specPool.insert({TALENT_TREE_PALADIN_RETRIBUTION});
     } else if (rc.isStr || forceAddAll) {
-        specPool.merge({TALENT_TREE_PALADIN_HOLY, TALENT_TREE_PALADIN_PROTECTION, TALENT_TREE_PALADIN_RETRIBUTION});
+        specPool.insert({TALENT_TREE_PALADIN_HOLY, TALENT_TREE_PALADIN_PROTECTION, TALENT_TREE_PALADIN_RETRIBUTION});
     }
     return specPool;
 }
@@ -475,7 +475,7 @@ auto itemRoleRoleCheckToClassSpecs_Paladin(itemPotentialRoleCheck rc, bool force
 auto itemRoleRoleCheckToClassSpecs_Hunter(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
     std::set<uint32> specPool;
     if (rc.isRanged || rc.isAgi || (!rc.isStr && rc.isPhysDPS) || forceAddAll) {
-        specPool.merge({
+        specPool.insert({
             TALENT_TREE_HUNTER_BEAST_MASTERY,
             TALENT_TREE_HUNTER_MARKSMANSHIP,
             TALENT_TREE_HUNTER_SURVIVAL,
@@ -487,7 +487,7 @@ auto itemRoleRoleCheckToClassSpecs_Hunter(itemPotentialRoleCheck rc, bool forceA
 auto itemRoleRoleCheckToClassSpecs_Rogue(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
     std::set<uint32> specPool;
     if (rc.isAgi || (!rc.isStr && (rc.isMelee || rc.isPhysDPS)) || forceAddAll) {
-        specPool.merge({
+        specPool.insert({
             TALENT_TREE_ROGUE_ASSASSINATION,
             TALENT_TREE_ROGUE_COMBAT,
             TALENT_TREE_ROGUE_SUBTLETY,
@@ -499,7 +499,7 @@ auto itemRoleRoleCheckToClassSpecs_Rogue(itemPotentialRoleCheck rc, bool forceAd
 auto itemRoleRoleCheckToClassSpecs_Priest(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
     std::set<uint32> specPool;
     if (rc.isCaster || forceAddAll) {
-        specPool.merge({
+        specPool.insert({
             TALENT_TREE_PRIEST_DISCIPLINE,
             TALENT_TREE_PRIEST_HOLY,
             TALENT_TREE_PRIEST_SHADOW,
@@ -511,9 +511,9 @@ auto itemRoleRoleCheckToClassSpecs_Priest(itemPotentialRoleCheck rc, bool forceA
 auto itemRoleRoleCheckToClassSpecs_DeathKnight(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
     std::set<uint32> specPool;
     if (rc.isTank) {
-        specPool.merge({TALENT_TREE_DEATH_KNIGHT_BLOOD});
+        specPool.insert({TALENT_TREE_DEATH_KNIGHT_BLOOD});
     } else if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isAgi || forceAddAll) {
-        specPool.merge({TALENT_TREE_DEATH_KNIGHT_BLOOD,TALENT_TREE_DEATH_KNIGHT_FROST,TALENT_TREE_DEATH_KNIGHT_UNHOLY});
+        specPool.insert({TALENT_TREE_DEATH_KNIGHT_BLOOD,TALENT_TREE_DEATH_KNIGHT_FROST,TALENT_TREE_DEATH_KNIGHT_UNHOLY});
     }
     return specPool;
 }
@@ -522,22 +522,22 @@ auto itemRoleRoleCheckToClassSpecs_Shaman(itemPotentialRoleCheck rc, bool forceA
     std::set<uint32> specPool;
     if (itemClass == ITEM_CLASS_ARMOR && itemSubClass == ITEM_SUBCLASS_ARMOR_SHIELD) {
         if (rc.isCaster || forceAddAll) {
-            specPool.merge({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+            specPool.insert({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
         }
         return specPool;
     }
     if (itemInvType == INVTYPE_HOLDABLE) {
         if (rc.isCaster || forceAddAll) {
-            specPool.merge({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+            specPool.insert({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
         }
         return specPool;
     }
     if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isAgi) {
-        specPool.merge({TALENT_TREE_SHAMAN_ENHANCEMENT});
+        specPool.insert({TALENT_TREE_SHAMAN_ENHANCEMENT});
     } else if (isCaster) {
-        specPool.merge({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+        specPool.insert({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
     } else if (forceAddAll) {
-        specPool.merge({TALENT_TREE_SHAMAN_ENHANCEMENT,TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+        specPool.insert({TALENT_TREE_SHAMAN_ENHANCEMENT,TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
     }
     return specPool;
 }
@@ -545,7 +545,7 @@ auto itemRoleRoleCheckToClassSpecs_Shaman(itemPotentialRoleCheck rc, bool forceA
 auto itemRoleRoleCheckToClassSpecs_Mage(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
     std::set<uint32> specPool;
     if (rc.isCaster || forceAddAll) {
-        specPool.merge({
+        specPool.insert({
             TALENT_TREE_MAGE_ARCANE,
             TALENT_TREE_MAGE_FIRE,
             TALENT_TREE_MAGE_FROST,
@@ -557,7 +557,7 @@ auto itemRoleRoleCheckToClassSpecs_Mage(itemPotentialRoleCheck rc, bool forceAdd
 auto itemRoleRoleCheckToClassSpecs_Warlock(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
     std::set<uint32> specPool;
     if (rc.isCaster || forceAddAll) {
-        specPool.merge({
+        specPool.insert({
             TALENT_TREE_WARLOCK_AFFLICTION,
             TALENT_TREE_WARLOCK_DEMONOLOGY,
             TALENT_TREE_WARLOCK_DESTRUCTION,
@@ -570,16 +570,16 @@ auto itemRoleRoleCheckToClassSpecs_Druid(itemPotentialRoleCheck rc, bool forceAd
     std::set<uint32> specPool;
     if (itemInvType == INVTYPE_HOLDABLE) {
         if (rc.isCaster || forceAddAll) {
-            specPool.merge({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
+            specPool.insert({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
         }
         return specPool;
     }
     if (rc.isTank || rc.isStr || rc.isPhysDPS || rc.isMelee || rc.isAgi) {
-        specPool.merge({TALENT_TREE_DRUID_FERAL_COMBAT});
+        specPool.insert({TALENT_TREE_DRUID_FERAL_COMBAT});
     } else if (rc.isCaster) {
-        specPool.merge({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
+        specPool.insert({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
     } else (forceAddAll) {
-        specPool.merge({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_FERAL_COMBAT,TALENT_TREE_DRUID_RESTORATION});
+        specPool.insert({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_FERAL_COMBAT,TALENT_TREE_DRUID_RESTORATION});
     }
     return specPool;
 }
@@ -634,20 +634,20 @@ auto getItemEnchantCategoryMask(Item* item)
                 case ITEM_SUBCLASS_ARMOR_CLOTH:
                     isCloth = ivt != INVTYPE_CLOAK;
                     if (isCloth) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_LEATHER:
                     isLeather = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (itemPlayerLevel > 40) {
                         if (specPool.empty()) {
                             // Nothing set, we include all potential leather wearing specs.
-                            specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                            specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                            specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                            specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                         }
                         // If leather item above level 40, we can safely break away
                         break;
@@ -662,19 +662,19 @@ auto getItemEnchantCategoryMask(Item* item)
                     bool isEventualMailUserItem = !isMail || itemPlayerLevel > 40;
                     if (isEventualMailUserItem)
                     {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
                         if (specPool.empty())
                         {
                             if (!isMail)
                             {
                                 // received fallthru from leather item + nothing set, we include all
                                 // potential leather wearing specs.
-                                specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                                specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                                specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                                specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                             }
-                            specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                            specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                            specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                            specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
                         }
                         break;
                     }
@@ -684,52 +684,52 @@ auto getItemEnchantCategoryMask(Item* item)
                     // isMail gear check, but this case check can be fallenthrough from the LEATHER
                     // in that case if isLeather is true, isMail will still be set false.
                     isPlate = !isMail;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_SHIELD:
                     isShield = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc);
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc);
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_IDOL:
                     isIdol = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_LIBRAM:
                     isLibram = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_TOTEM:
                     isTotem = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_SIGIL:
                     isSigil = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
                     }
                     break;
             }
@@ -747,191 +747,191 @@ auto getItemEnchantCategoryMask(Item* item)
                     //       all ranged item types are evaluated together
                 case ITEM_SUBCLASS_WEAPON_GUN:
                     isGun = !isBow && !isCrossbow;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
                     // NOTE: fallthrough to Thrown item. there is a potential that isSet is not set at all
                     //       all ranged item types are evaluated together
                 case ITEM_SUBCLASS_WEAPON_THROWN:
                     isThrown = !isBow && !isCrossbow && !isGun;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_WAND:
                     isWand = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
                     break;
                 case ITEM_SUBCLASS_WEAPON_DAGGER:
                     isDagger = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_FIST:
                     isFist = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_AXE:
                     isAxe = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_MACE:
                     isMace = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_SWORD:
                     isSword = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_POLEARM:
                     isPolearm = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_STAFF:
                     isStaff = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_AXE2:
                     isAxe2 = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_MACE2:
                     isMace2 = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_SWORD2:
                     isSword2 = true;
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
-                    specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
                     if (specPool.empty()) {
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
-                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_WEAPON_SPEAR:
@@ -950,12 +950,12 @@ auto getItemEnchantCategoryMask(Item* item)
     {
         case INVTYPE_HOLDABLE:
             isHoldable = true;
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
             break;
         case INVTYPE_NECK:
             isNeck = true;
@@ -968,27 +968,27 @@ auto getItemEnchantCategoryMask(Item* item)
             // fallthru
         case INVTYPE_TRINKET:
             isTrinket = !isFinger && !isNeck && !isCloak;
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, false. ic, isc, ivt));
-            specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, false. ic, isc, ivt));
+            specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, false. ic, isc, ivt));
             if (specPool.empty()) {
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true. ic, isc, ivt));
-                specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Warrior(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Paladin(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Hunter(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Rogue(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Priest(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_DeathKnight(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Shaman(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Mage(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Warlock(r, true. ic, isc, ivt));
+                specPool.insert(itemRoleRoleCheckToClassSpecs_Druid(r, true. ic, isc, ivt));
             }
             break;
     }
