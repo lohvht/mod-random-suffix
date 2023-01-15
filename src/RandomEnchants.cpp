@@ -142,15 +142,19 @@ int getLevelOffset(Item* item, Player* player = nullptr)
     }
     return level;
 }
-
 auto getPlayerEnchantCategoryMask(Player* player)
+{
+    return getEnchantCategoryMaskByClassAndSpec(player->getClass(), player->GetSpec(player->GetActiveSpec()));
+}
+
+auto getEnchantCategoryMaskByClassAndSpec(uint8 plrClass, uint32 plrSpec)
 {
     std::vector<EnchantCategory> plrEnchCats;
     std::vector<Attributes> plrAttrs;
-    switch (player->getClass())
+    switch (plrClass)
     {
         case CLASS_WARRIOR:
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
             case TALENT_TREE_WARRIOR_ARMS:
             case TALENT_TREE_WARRIOR_FURY:
@@ -164,7 +168,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
             }
             break;
         case CLASS_PALADIN:
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_PALADIN_HOLY:
                     plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
@@ -183,7 +187,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
         case CLASS_HUNTER:
             plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_RANGED_AGI});
             plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_HUNTER_BEAST_MASTERY:
                 case TALENT_TREE_HUNTER_MARKSMANSHIP:
@@ -193,7 +197,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
             break;
         case CLASS_ROGUE:
             plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_ROGUE_ASSASSINATION:
                 case TALENT_TREE_ROGUE_COMBAT:
@@ -204,7 +208,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
         case CLASS_PRIEST:
             plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
             plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_CRIT});
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_PRIEST_DISCIPLINE:
                 case TALENT_TREE_PRIEST_HOLY:
@@ -215,7 +219,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
             }
             break;
         case CLASS_DEATH_KNIGHT:
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_DEATH_KNIGHT_BLOOD:
                 case TALENT_TREE_DEATH_KNIGHT_FROST:
@@ -226,7 +230,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
             }
             break;
         case CLASS_SHAMAN:
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_SHAMAN_ELEMENTAL:
                     plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
@@ -245,7 +249,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
         case CLASS_MAGE:
             plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
             plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_MAGE_ARCANE:
                 case TALENT_TREE_MAGE_FIRE:
@@ -256,7 +260,7 @@ auto getPlayerEnchantCategoryMask(Player* player)
         case CLASS_WARLOCK:
             plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
             plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_WARLOCK_AFFLICTION:
                 case TALENT_TREE_WARLOCK_DEMONOLOGY:
@@ -265,14 +269,14 @@ auto getPlayerEnchantCategoryMask(Player* player)
             }
             break;
         case CLASS_DRUID:
-            switch (player->GetSpec(player->GetActiveSpec()))
+            switch (plrSpec)
             {
                 case TALENT_TREE_DRUID_BALANCE:
                     plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_CASTER});
                     plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
                     break;
                 case TALENT_TREE_DRUID_FERAL_COMBAT:
-                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_AGI_DPS});
+                    plrEnchCats.insert(plrEnchCats.end(), {ENCH_CAT_MELEE_AGI_DPS, ENCH_CAT_MELEE_AGI_TANK});
                     plrAttrs.insert(plrAttrs.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
                     break;
                 case TALENT_TREE_DRUID_RESTORATION:
@@ -288,17 +292,56 @@ auto getPlayerEnchantCategoryMask(Player* player)
     return retVals{getEnchantCategoryMask(plrEnchCats), getAttributeMask(plrAttrs)};
 }
 
-// gets the item enchant category mask for a given item
-auto getItemEnchantCategoryMask(Item* item)
+std::unordered_map<uint32, uint8> specToClass = {
+    {TALENT_TREE_WARRIOR_ARMS,          CLASS_WARRIOR},
+    {TALENT_TREE_WARRIOR_FURY,          CLASS_WARRIOR},
+    {TALENT_TREE_WARRIOR_PROTECTION,    CLASS_WARRIOR},
+    {TALENT_TREE_PALADIN_HOLY,          CLASS_PALADIN},
+    {TALENT_TREE_PALADIN_PROTECTION,    CLASS_PALADIN},
+    {TALENT_TREE_PALADIN_RETRIBUTION,   CLASS_PALADIN},
+    {TALENT_TREE_HUNTER_BEAST_MASTERY,  CLASS_HUNTER},
+    {TALENT_TREE_HUNTER_MARKSMANSHIP,   CLASS_HUNTER},
+    {TALENT_TREE_HUNTER_SURVIVAL,       CLASS_HUNTER},
+    {TALENT_TREE_ROGUE_ASSASSINATION,   CLASS_ROGUE},
+    {TALENT_TREE_ROGUE_COMBAT,          CLASS_ROGUE},
+    {TALENT_TREE_ROGUE_SUBTLETY,        CLASS_ROGUE},
+    {TALENT_TREE_PRIEST_DISCIPLINE,     CLASS_PRIEST},
+    {TALENT_TREE_PRIEST_HOLY,           CLASS_PRIEST},
+    {TALENT_TREE_PRIEST_SHADOW,         CLASS_PRIEST},
+    {TALENT_TREE_DEATH_KNIGHT_BLOOD,    CLASS_DEATH_KNIGHT},
+    {TALENT_TREE_DEATH_KNIGHT_FROST,    CLASS_DEATH_KNIGHT},
+    {TALENT_TREE_DEATH_KNIGHT_UNHOLY,   CLASS_DEATH_KNIGHT},
+    {TALENT_TREE_SHAMAN_ELEMENTAL,      CLASS_SHAMAN},
+    {TALENT_TREE_SHAMAN_ENHANCEMENT,    CLASS_SHAMAN},
+    {TALENT_TREE_SHAMAN_RESTORATION,    CLASS_SHAMAN},
+    {TALENT_TREE_MAGE_ARCANE,           CLASS_MAGE},
+    {TALENT_TREE_MAGE_FIRE,             CLASS_MAGE},
+    {TALENT_TREE_MAGE_FROST,            CLASS_MAGE},
+    {TALENT_TREE_WARLOCK_AFFLICTION,    CLASS_WARLOCK},
+    {TALENT_TREE_WARLOCK_DEMONOLOGY,    CLASS_WARLOCK},
+    {TALENT_TREE_WARLOCK_DESTRUCTION,   CLASS_WARLOCK},
+    {TALENT_TREE_DRUID_BALANCE,         CLASS_DRUID},
+    {TALENT_TREE_DRUID_FERAL_COMBAT,    CLASS_DRUID},
+    {TALENT_TREE_DRUID_RESTORATION,     CLASS_DRUID},
+};
+
+typedef struct itemPotentialRoleCheck {
+    bool isRanged;
+    bool isMelee;
+    bool isPhysDPS;
+    bool isStr;
+    bool isAgi;
+    bool isTank;
+    bool isCaster;
+
+    itemPotentialRoleCheck(): isRanged(false), isMelee(false), isPhysDPS(false), isStr(false), isAgi(false), isTank(false), isCaster(false) {}
+
+} itemPotentialRoleCheck;
+
+auto getItemPotentialRoles(Item* item)
 {
+    itemPotentialRoleCheck r;
     // role checks
-    bool isRanged = false;
-    bool isMelee = false;
-    bool isPhysDPS = false;
-    bool isStr = false;
-    bool isAgi = false;
-    bool isTank = false;
-    bool isCaster = false;
     for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
     {
         if (i >= item->GetTemplate()->StatsCount)
@@ -308,55 +351,55 @@ auto getItemEnchantCategoryMask(Item* item)
         switch (item->GetTemplate()->ItemStat[i].ItemStatType)
         {
             case ITEM_MOD_AGILITY:
-                isAgi = true;
+                r.isAgi = true;
                 continue;
             case ITEM_MOD_STRENGTH:
-                isStr = true;
+                r.isStr = true;
                 continue;
             case ITEM_MOD_INTELLECT:
             case ITEM_MOD_SPIRIT:
-                isCaster = true;
+                r.isCaster = true;
                 continue;
             case ITEM_MOD_HIT_MELEE_RATING:
             case ITEM_MOD_CRIT_MELEE_RATING:
             case ITEM_MOD_HASTE_MELEE_RATING:
             case ITEM_MOD_EXPERTISE_RATING:
-                isMelee = true;
+                r.isMelee = true;
                 continue;
             case ITEM_MOD_HIT_RANGED_RATING:
             case ITEM_MOD_CRIT_RANGED_RATING:
             case ITEM_MOD_HASTE_RANGED_RATING:
             case ITEM_MOD_RANGED_ATTACK_POWER:
-                isRanged = true;
+                r.isRanged = true;
                 continue;
             case ITEM_MOD_HIT_SPELL_RATING:
             case ITEM_MOD_SPELL_DAMAGE_DONE:
             case ITEM_MOD_SPELL_PENETRATION:
-                isCaster = true;
+                r.isCaster = true;
                 continue;
             case ITEM_MOD_CRIT_SPELL_RATING:
             case ITEM_MOD_HASTE_SPELL_RATING:
             case ITEM_MOD_SPELL_POWER:
             // TODO: Check proto->HasSpellPowerStat() for spellpower
             // TODO: Check SPELL_AURA_MOD_POWER_COST_SCHOOL for specific spell schools (e.g. shadow, holy etc)
-                isCaster = true;
+                r.isCaster = true;
                 continue;
             case ITEM_MOD_SPELL_HEALING_DONE:
             case ITEM_MOD_MANA_REGENERATION:
-                isCaster = true;
+                r.isCaster = true;
                 continue;
             case ITEM_MOD_ATTACK_POWER:
             case ITEM_MOD_ARMOR_PENETRATION_RATING:
-                isPhysDPS = true;
+                r.isPhysDPS = true;
                 continue;
             case ITEM_MOD_DEFENSE_SKILL_RATING:
             case ITEM_MOD_DODGE_RATING:
             case ITEM_MOD_PARRY_RATING:
-                isTank = true;
+                r.isTank = true;
                 continue;
             case ITEM_MOD_BLOCK_RATING:
             case ITEM_MOD_BLOCK_VALUE:
-                isTank = true;
+                r.isTank = true;
                 continue;
             case ITEM_MOD_STAMINA:
             case ITEM_MOD_HEALTH:
@@ -377,172 +420,518 @@ auto getItemEnchantCategoryMask(Item* item)
                 continue;
         }
     }
-    std::vector<Attributes> attributesMeleeStrDps;
-    std::vector<Attributes> attributesMeleeStrTank;
-    std::vector<Attributes> attributesMeleeAgiDps;
-    std::vector<Attributes> attributesMeleeAgiTank;
-    std::vector<Attributes> attributesRangedAgi;
-    std::vector<Attributes> attributesCaster;
-    std::vector<EnchantCategory> enchCatsMeleeStrDps;
-    std::vector<EnchantCategory> enchCatsMeleeStrTank;
-    std::vector<EnchantCategory> enchCatsMeleeAgiDps;
-    std::vector<EnchantCategory> enchCatsMeleeAgiTank;
-    std::vector<EnchantCategory> enchCatsRangedAgi;
-    std::vector<EnchantCategory> enchCatsCaster;
+    return r;
+}
 
+auto itemRoleRoleCheckToClassSpecs_Warrior(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (itemClass == ITEM_CLASS_ARMOR && itemSubClass == ITEM_SUBCLASS_ARMOR_SHIELD) {
+        if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isTank || forceAddAll) {
+            specPool.insert(specPool.end(), {TALENT_TREE_WARRIOR_PROTECTION});
+        }
+        return specPool;
+    }
+    if (rc.isTank) {
+        specPool.insert(specPool.end(), {TALENT_TREE_WARRIOR_PROTECTION});
+    } else if (!rc.isAgi && (rc.isMelee || rc.isPhysDPS)) {
+        specPool.insert(specPool.end(), {TALENT_TREE_WARRIOR_ARMS, TALENT_TREE_WARRIOR_FURY});
+    } else if (rc.isStr || forceAddAll) {
+        specPool.insert(specPool.end(), {TALENT_TREE_WARRIOR_PROTECTION, TALENT_TREE_WARRIOR_ARMS, TALENT_TREE_WARRIOR_FURY});
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Paladin(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (itemClass == ITEM_CLASS_ARMOR && itemSubClass == ITEM_SUBCLASS_ARMOR_SHIELD) {
+        if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isTank) {
+            specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_PROTECTION});
+        } else if (rc.isCaster) {
+            specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_HOLY});
+        } else if (forceAddAll) {
+            specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_HOLY, TALENT_TREE_PALADIN_PROTECTION});
+        }
+        return specPool;
+    }
+    if (itemInvType == INVTYPE_HOLDABLE) {
+        if (rc.isCaster || forceAddAll) {
+            specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_HOLY});
+        }
+        return specPool;
+    }
+    if (rc.isTank) {
+        specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_PROTECTION});
+    } else if (rc.isCaster) {
+        specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_HOLY});
+    } else if (!rc.isAgi && (rc.isMelee || rc.isPhysDPS)) {
+        specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_RETRIBUTION});
+    } else if (rc.isStr || forceAddAll) {
+        specPool.insert(specPool.end(), {TALENT_TREE_PALADIN_HOLY, TALENT_TREE_PALADIN_PROTECTION, TALENT_TREE_PALADIN_RETRIBUTION});
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Hunter(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (rc.isRanged || rc.isAgi || (!rc.isStr && rc.isPhysDPS) || forceAddAll) {
+        specPool.insert(specPool.end(), {
+            TALENT_TREE_HUNTER_BEAST_MASTERY,
+            TALENT_TREE_HUNTER_MARKSMANSHIP,
+            TALENT_TREE_HUNTER_SURVIVAL,
+        });
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Rogue(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (rc.isAgi || (!rc.isStr && (rc.isMelee || rc.isPhysDPS)) || forceAddAll) {
+        specPool.insert(specPool.end(), {
+            TALENT_TREE_ROGUE_ASSASSINATION,
+            TALENT_TREE_ROGUE_COMBAT,
+            TALENT_TREE_ROGUE_SUBTLETY,
+        });
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Priest(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (rc.isCaster || forceAddAll) {
+        specPool.insert(specPool.end(), {
+            TALENT_TREE_PRIEST_DISCIPLINE,
+            TALENT_TREE_PRIEST_HOLY,
+            TALENT_TREE_PRIEST_SHADOW,
+        });
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_DeathKnight(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (rc.isTank) {
+        specPool.insert(specPool.end(), {TALENT_TREE_DEATH_KNIGHT_BLOOD});
+    } else if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isAgi || forceAddAll) {
+        specPool.insert(specPool.end(), {TALENT_TREE_DEATH_KNIGHT_BLOOD,TALENT_TREE_DEATH_KNIGHT_FROST,TALENT_TREE_DEATH_KNIGHT_UNHOLY});
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Shaman(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (itemClass == ITEM_CLASS_ARMOR && itemSubClass == ITEM_SUBCLASS_ARMOR_SHIELD) {
+        if (rc.isCaster || forceAddAll) {
+            specPool.insert(specPool.end(), {TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+        }
+        return specPool;
+    }
+    if (itemInvType == INVTYPE_HOLDABLE) {
+        if (rc.isCaster || forceAddAll) {
+            specPool.insert(specPool.end(), {TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+        }
+        return specPool;
+    }
+    if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isAgi) {
+        specPool.insert(specPool.end(), {TALENT_TREE_SHAMAN_ENHANCEMENT});
+    } else if (isCaster) {
+        specPool.insert(specPool.end(), {TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+    } else if (forceAddAll) {
+        specPool.insert(specPool.end(), {TALENT_TREE_SHAMAN_ENHANCEMENT,TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Mage(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (rc.isCaster || forceAddAll) {
+        specPool.insert(specPool.end(), {
+            TALENT_TREE_MAGE_ARCANE,
+            TALENT_TREE_MAGE_FIRE,
+            TALENT_TREE_MAGE_FROST,
+        });
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Warlock(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (rc.isCaster || forceAddAll) {
+        specPool.insert(specPool.end(), {
+            TALENT_TREE_WARLOCK_AFFLICTION,
+            TALENT_TREE_WARLOCK_DEMONOLOGY,
+            TALENT_TREE_WARLOCK_DESTRUCTION,
+        });
+    }
+    return specPool;
+}
+
+auto itemRoleRoleCheckToClassSpecs_Druid(itemPotentialRoleCheck rc, bool forceAddAll=false, uint32 itemClass=0, uint32 itemSubClass=0, uint32 itemInvType=0) {
+    std::set<uint32> specPool;
+    if (itemInvType == INVTYPE_HOLDABLE) {
+        if (rc.isCaster || forceAddAll) {
+            specPool.insert(specPool.end(), {TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
+        }
+        return specPool;
+    }
+    if (rc.isTank || rc.isStr || rc.isPhysDPS || rc.isMelee || rc.isAgi) {
+        specPool.insert(specPool.end(), {TALENT_TREE_DRUID_FERAL_COMBAT});
+    } else if (rc.isCaster) {
+        specPool.insert(specPool.end(), {TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
+    } else (forceAddAll) {
+        specPool.insert(specPool.end(), {TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_FERAL_COMBAT,TALENT_TREE_DRUID_RESTORATION});
+    }
+    return specPool;
+}
+
+
+// gets the item enchant category mask for a given item
+auto getItemEnchantCategoryMask(Item* item)
+{
+    auto r = getItemPotentialRoles(item);
     auto itemPlayerLevel = getItemPlayerLevel(item);
-    switch (item->GetTemplate()->Class)
+    std::set<uint32> specPool; 
+    auto ic = item->GetTemplate()->Class;
+    auto isc = item->GetTemplate()->SubClass;
+    auto ivt = item->GetTemplate()->InventoryType;
+    // ITEM CLASS + SUB CLASS - ARMOUR
+    bool isCloth = false;
+    bool isLeather = false;
+    bool isMail = false;
+    bool isPlate = false;
+    bool isIdol = false;
+    bool isLibram = false;
+    bool isTotem = false;
+    bool isSigil = false;
+    bool isShield = false;
+    // ITEM CLASS + SUB CLASS - WEAPONS
+    bool isBow = false;
+    bool isCrossbow = false;
+    bool isGun = false;
+    bool isThrown = false;
+    bool isWand = false;
+    bool isDagger = false;
+    bool isFist = false;
+    bool isAxe = false;
+    bool isMace = false;
+    bool isSword = false;
+    bool isPolearm = false;
+    bool isStaff = false;
+    bool isAxe2 = false;
+    bool isMace2 = false;
+    bool isSword2 = false;
+    // INV TYPE FOR MISC SLOTS
+    bool isNeck = false; 
+    bool isCloak = false; 
+    bool isHoldable = false; 
+    bool isFinger = false; 
+    bool isTrinket = false; 
+    switch (ic)
     {
         case ITEM_CLASS_ARMOR:
-            switch (item->GetTemplate()->SubClass)
+            switch (isc)
             {
-                case ITEM_SUBCLASS_ARMOR_MISC:
-                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
-                    attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
-                    enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
-                    break;
                 case ITEM_SUBCLASS_ARMOR_CLOTH:
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
+                    isCloth = ivt != INVTYPE_CLOAK;
+                    if (isCloth) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                    }
                     break;
                 case ITEM_SUBCLASS_ARMOR_LEATHER:
-                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT});
-                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
-                    if (itemPlayerLevel < 40)
-                    {
-                        attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPELLPOWER});
-                        attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                        enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
+                    isLeather = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (itemPlayerLevel > 40) {
+                        if (specPool.empty()) {
+                            // Nothing set, we include all potential leather wearing specs.
+                            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                        }
+                        // If leather item above level 40, we can safely break away
+                        break;
                     }
-                    if (isStr || isRanged || isMelee || isPhysDPS || isTank)
-                    {
-                        isAgi = true;
-                    }
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
-                    break;
+                    // NOTE: FALLTHROUGH TO MAIL, there is a potential that isSet is not set at all
+                    //       but we try to bank on the chance that the conditionals in mail are set.
                 case ITEM_SUBCLASS_ARMOR_MAIL:
-                    if (itemPlayerLevel < 40)
+                    // isMail gear check, but this case check can be fallenthrough from the LEATHER
+                    // in that case if isLeather is true, isMail will still be set false.
+                    isMail = !isLeather;
+                    // isEventualMailUserItem check. This checks for actual mail item is above lvl 40 or is leather below level 40.
+                    bool isEventualMailUserItem = !isMail || itemPlayerLevel > 40;
+                    if (isEventualMailUserItem)
                     {
-                        attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                        attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                        enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                        enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                        if (isAgi || isMelee || isPhysDPS || isTank)
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                        if (specPool.empty())
                         {
-                            isStr = true;
+                            if (!isMail)
+                            {
+                                // received fallthru from leather item + nothing set, we include all
+                                // potential leather wearing specs.
+                                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                            }
+                            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
                         }
+                        break;
                     }
-                    else
-                    {
-                        attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_SPELLPOWER});
-                        attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                        enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                        enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
-                        if (isStr || isRanged || isMelee || isPhysDPS || isTank)
-                        {
-                            isAgi = true;
-                        }
-                    }
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
-                    break;
+                    // NOTE: fallthrough to PLATE item. there is a potential that isSet is not set at all
+                    //       but we try to bank on the chance that the conditionals in the next case section are set.
                 case ITEM_SUBCLASS_ARMOR_PLATE:
-                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
-                    if (isAgi || isMelee || isPhysDPS || isTank)
-                    {
-                        isStr = true;
+                    // isMail gear check, but this case check can be fallenthrough from the LEATHER
+                    // in that case if isLeather is true, isMail will still be set false.
+                    isPlate = !isMail;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
                     }
                     break;
                 case ITEM_SUBCLASS_ARMOR_SHIELD:
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
-                    if (isAgi || isMelee || isPhysDPS || isTank)
-                    {
-                        isStr = true;
+                    isShield = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc);
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_ARMOR_IDOL:
+                    isIdol = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_ARMOR_LIBRAM:
+                    isLibram = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_ARMOR_TOTEM:
+                    isTotem = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_ARMOR_SIGIL:
+                    isSigil = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
                     }
                     break;
             }
             break;
         case ITEM_CLASS_WEAPON:
-            switch (item->GetTemplate()->SubClass)
+            switch (isc)
             {
-                case ITEM_SUBCLASS_WEAPON_AXE:
-                case ITEM_SUBCLASS_WEAPON_AXE2:
-                case ITEM_SUBCLASS_WEAPON_MACE:
-                case ITEM_SUBCLASS_WEAPON_MACE2:
-                case ITEM_SUBCLASS_WEAPON_SWORD:
-                case ITEM_SUBCLASS_WEAPON_SWORD2:
-                case ITEM_SUBCLASS_WEAPON_POLEARM:
-                case ITEM_SUBCLASS_WEAPON_DAGGER:
-                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
-                    attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
-                    enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
-                    break;
                 case ITEM_SUBCLASS_WEAPON_BOW:
-                case ITEM_SUBCLASS_WEAPON_GUN:
+                    isBow = true;
+                    // NOTE: fallthrough to Crossbow item. there is a potential that isSet is not set at all
+                    //       all ranged item types are evaluated together
                 case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
-                    attributesRangedAgi.insert(attributesRangedAgi.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
-                    enchCatsRangedAgi.insert(enchCatsRangedAgi.end(), {ENCH_CAT_RANGED_AGI});
-                    break;
-                case ITEM_SUBCLASS_WEAPON_FIST:
-                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
-                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
-                    break;
+                    isCrossbow = !isBow;
+                    // NOTE: fallthrough to Gun item. there is a potential that isSet is not set at all
+                    //       all ranged item types are evaluated together
+                case ITEM_SUBCLASS_WEAPON_GUN:
+                    isGun = !isBow && !isCrossbow;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    // NOTE: fallthrough to Thrown item. there is a potential that isSet is not set at all
+                    //       all ranged item types are evaluated together
                 case ITEM_SUBCLASS_WEAPON_THROWN:
-                    attributesMeleeStrDps.insert(attributesMeleeStrDps.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeStrTank.insert(attributesMeleeStrTank.end(), {ATTRIBUTE_STRENGTH,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE,ATTRIBUTE_PARRY});
-                    attributesMeleeAgiDps.insert(attributesMeleeAgiDps.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_ATTACKPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT,ATTRIBUTE_EXPERTISE});
-                    attributesMeleeAgiTank.insert(attributesMeleeAgiTank.end(), {ATTRIBUTE_AGILITY,ATTRIBUTE_STAMINA,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_EXPERTISE,ATTRIBUTE_DEFENSERATING,ATTRIBUTE_DODGE});
-                    enchCatsMeleeStrDps.insert(enchCatsMeleeStrDps.end(), {ENCH_CAT_MELEE_STR_DPS});
-                    enchCatsMeleeStrTank.insert(enchCatsMeleeStrTank.end(), {ENCH_CAT_MELEE_STR_TANK});
-                    enchCatsMeleeAgiDps.insert(enchCatsMeleeAgiDps.end(), {ENCH_CAT_MELEE_AGI_DPS});
-                    enchCatsMeleeAgiTank.insert(enchCatsMeleeAgiTank.end(), {ENCH_CAT_MELEE_AGI_TANK});
+                    isThrown = !isBow && !isCrossbow && !isGun;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                    }
                     break;
                 case ITEM_SUBCLASS_WEAPON_WAND:
-                    attributesCaster.insert(attributesCaster.end(), {ATTRIBUTE_INTELLECT,ATTRIBUTE_SPIRIT,ATTRIBUTE_STAMINA,ATTRIBUTE_SPELLPOWER,ATTRIBUTE_HASTE,ATTRIBUTE_HIT,ATTRIBUTE_CRIT});
-                    enchCatsCaster.insert(enchCatsCaster.end(), {ENCH_CAT_CASTER});
+                    isWand = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                    break;
+                case ITEM_SUBCLASS_WEAPON_DAGGER:
+                    isDagger = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_FIST:
+                    isFist = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_AXE:
+                    isAxe = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_MACE:
+                    isMace = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_SWORD:
+                    isSword = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_POLEARM:
+                    isPolearm = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_STAFF:
+                    isStaff = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_AXE2:
+                    isAxe2 = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_MACE2:
+                    isMace2 = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true, ic, isc, ivt));
+                    }
+                    break;
+                case ITEM_SUBCLASS_WEAPON_SWORD2:
+                    isSword2 = true;
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                    specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                    if (specPool.empty()) {
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true, ic, isc, ivt));
+                        specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true, ic, isc, ivt));
+                    }
                     break;
                 case ITEM_SUBCLASS_WEAPON_SPEAR:
                 case ITEM_SUBCLASS_WEAPON_obsolete:
@@ -555,121 +944,144 @@ auto getItemEnchantCategoryMask(Item* item)
             }
             break;
     }
-    std::vector<EnchantCategory> itmEnchCats;
-    std::vector<Attributes> itemAttrs;
-    struct retVals {
-        uint32 enchCatMask, attrMask;
-    };
-    bool noStats = !isRanged && !isMelee && !isPhysDPS && !isStr && !isAgi && !isTank && !isCaster;
+
+    switch (ivt)
+    {
+        case INVTYPE_HOLDABLE:
+            isHoldable = true;
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+            break;
+        case INVTYPE_NECK:
+            isNeck = true;
+            // fallthru
+        case INVTYPE_CLOAK:
+            isCloak = !isNeck;
+            // fallthru
+        case INVTYPE_FINGER:
+            isFinger = !isNeck && !isCloak;
+            // fallthru
+        case INVTYPE_TRINKET:
+            isTrinket = !isFinger && !isNeck && !isCloak;
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, false. ic, isc, ivt));
+            specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, false. ic, isc, ivt));
+            if (specPool.empty()) {
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warrior(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Paladin(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Hunter(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Rogue(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Priest(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_DeathKnight(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Shaman(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Mage(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Warlock(r, true. ic, isc, ivt));
+                specPool.insert(specPool.end(), itemRoleRoleCheckToClassSpecs_Druid(r, true. ic, isc, ivt));
+            }
+            break;
+    }
     if (config_debug)
     {
+        LOG_INFO("module", ">>>>> RANDOM_ENCHANT DEBUG PRINT START <<<<<");
         LOG_INFO("module", "RANDOM_ENCHANT: Getting item enchant mask, checks below:");
         LOG_INFO("module", "       For item {}, Item ID is: {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId);
-        LOG_INFO("module", "                isRanged = {}", isRanged); 
-        LOG_INFO("module", "                isMelee = {}", isMelee); 
-        LOG_INFO("module", "                isPhysDPS = {}", isPhysDPS); 
-        LOG_INFO("module", "                isStr = {}", isStr); 
-        LOG_INFO("module", "                isAgi = {}", isAgi); 
-        LOG_INFO("module", "                isTank = {}", isTank); 
-        LOG_INFO("module", "                isCaster = {}", isCaster); 
-        LOG_INFO("module", "                noStats = {}", noStats);
-    }
-    if (noStats) {
-        // If no stats, we add every item category from the item classes (armour type, weapon weapon type etc etc).
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrDps.begin(), attributesMeleeStrDps.end());
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrTank.begin(), attributesMeleeStrTank.end());
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiDps.begin(), attributesMeleeAgiDps.end());
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiTank.begin(), attributesMeleeAgiTank.end());
-        itemAttrs.insert(itemAttrs.end(), attributesRangedAgi.begin(), attributesRangedAgi.end());
-        itemAttrs.insert(itemAttrs.end(), attributesCaster.begin(), attributesCaster.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrDps.begin(), enchCatsMeleeStrDps.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrTank.begin(), enchCatsMeleeStrTank.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiDps.begin(), enchCatsMeleeAgiDps.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiTank.begin(), enchCatsMeleeAgiTank.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsRangedAgi.begin(), enchCatsRangedAgi.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsCaster.begin(), enchCatsCaster.end());
-        return retVals{getEnchantCategoryMask(itmEnchCats), getAttributeMask(itemAttrs)};
-    }
-
-    bool isMeleeStrDPS = (isMelee || isPhysDPS) && isStr;
-    bool isMeleeStrTank = isTank && isStr;
-    bool isMeleeAgiDPS = (isMelee || isPhysDPS) && isAgi;
-    bool isMeleeAgiTank = isTank && isAgi;
-    bool isRangedAgi = (isRanged || isPhysDPS) && isAgi;
-    if (isStr && !isMeleeStrDPS && !isMeleeStrTank)
-    {
-        // Has str but no general melee or tank stats, set both
-        isMeleeStrDPS = true;
-        isMeleeStrTank = true;
-    }
-    if (isAgi && !isMeleeAgiDPS && !isMeleeAgiTank)
-    {
-        // Has agi but no general melee or tank stats, set both
-        isMeleeAgiDPS = true;
-        isMeleeAgiTank = true;
-    }
-    if (!isStr && !isAgi)
-    {
-        // No main stat for str and agi
-        if (isMelee)
-        {
-            isMeleeStrDPS = true;
-            isMeleeAgiDPS = true;
+        LOG_INFO("module", "       >>> Printing detected item roles/stats profile");
+        LOG_INFO("module", "                isRanged = {}", r.isRanged);
+        LOG_INFO("module", "                isMelee = {}", r.isMelee);
+        LOG_INFO("module", "                isPhysDPS = {}", r.isPhysDPS);
+        LOG_INFO("module", "                isStr = {}", r.isStr);
+        LOG_INFO("module", "                isAgi = {}", r.isAgi);
+        LOG_INFO("module", "                isTank = {}", r.isTank);
+        LOG_INFO("module", "                isCaster = {}", r.isCaster);
+        LOG_INFO("module", "       >>> Printing detected item slots");
+        LOG_INFO("module", "                isCloth = {}", isCloth);
+        LOG_INFO("module", "                isLeather = {}", isLeather);
+        LOG_INFO("module", "                isMail = {}", isMail);
+        LOG_INFO("module", "                isPlate = {}", isPlate);
+        LOG_INFO("module", "                isIdol = {}", isIdol);
+        LOG_INFO("module", "                isLibram = {}", isLibram);
+        LOG_INFO("module", "                isTotem = {}", isTotem);
+        LOG_INFO("module", "                isSigil = {}", isSigil);
+        LOG_INFO("module", "                isShield = {}", isShield);
+        LOG_INFO("module", "                isBow = {}", isBow);
+        LOG_INFO("module", "                isCrossbow = {}", isCrossbow);
+        LOG_INFO("module", "                isGun = {}", isGun);
+        LOG_INFO("module", "                isThrown = {}", isThrown);
+        LOG_INFO("module", "                isWand = {}", isWand);
+        LOG_INFO("module", "                isDagger = {}", isDagger);
+        LOG_INFO("module", "                isFist = {}", isFist);
+        LOG_INFO("module", "                isAxe = {}", isAxe);
+        LOG_INFO("module", "                isMace = {}", isMace);
+        LOG_INFO("module", "                isSword = {}", isSword);
+        LOG_INFO("module", "                isPolearm = {}", isPolearm);
+        LOG_INFO("module", "                isStaff = {}", isStaff);
+        LOG_INFO("module", "                isAxe2 = {}", isAxe2);
+        LOG_INFO("module", "                isMace2 = {}", isMace2);
+        LOG_INFO("module", "                isSword2 = {}", isSword2);
+        LOG_INFO("module", "                isNeck = {}", isNeck);
+        LOG_INFO("module", "                isCloak = {}", isCloak);
+        LOG_INFO("module", "                isHoldable = {}", isHoldable);
+        LOG_INFO("module", "                isFinger = {}", isFinger);
+        LOG_INFO("module", "                isTrinket = {}", isTrinket);
+        LOG_INFO("module", "       >>> Printing candidate specs");
+        std::ostringstream stream;
+        for (auto s : specPool) {
+            stream << std::to_string(s) << ",";
         }
-        if (isTank)
-        {
-            isMeleeStrTank = true;
-            isMeleeAgiTank = true;
-        }
-        if (isPhysDPS)
-        {
-            isMeleeStrDPS = true;
-            isMeleeAgiDPS = true;
-            isRangedAgi = true;
-        }
-        if (isRanged)
-        {
-            isRangedAgi = true;
-        }
+        std::string result = stream.str();
+        LOG_INFO("module", "                candidate_specs = [{}]", result);
+        LOG_INFO("module", ">>>>> RANDOM_ENCHANT DEBUG PRINT END <<<<<");
     }
-
-    if (isCaster)
+    struct retVals {
+        uint32 enchCatMask, attrMask;
+        bool hasEnch;
+    };
+    if (specPool.empty()) {
+        LOG_ERROR("module", "RANDOM_ENCHANT: ERROR Spec pool is empty somehow");
+        return retVals{0, 0, false};
+    }
+    auto chosenSpec = Acore::Containers::SelectRandomContainerElement(specPool);
+    uint8 plrClass = 0;
+    uint32 plrSpec = 0;
+    bool isFound = false;
+    if (auto found = specToClass.find(chosenSpec); found != specToClass.end()) {
+        isFound = true;
+        plrClass = found->second;
+        plrSpec = found->first;
+    }
+    if (!isFound) {
+        // should not be the case
+        LOG_ERROR("module", "RANDOM_ENCHANT: ERROR the chosen spec is not found: chosen spec was: {}", chosenSpec);
+        return retVals{0, 0, false};
+    }
+    auto [enchCatMask, attrMask] = getEnchantCategoryMaskByClassAndSpec(plrClass, plrSpec);
+    if (config_debug)
     {
-        itemAttrs.insert(itemAttrs.end(), attributesCaster.begin(), attributesCaster.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsCaster.begin(), enchCatsCaster.end());
+        LOG_INFO("module", ">>>>> RANDOM_ENCHANT DEBUG PRINT CHOSEN ITEM SPEC START <<<<<");
+        LOG_INFO("module", "RANDOM_ENCHANT: CHOSEN SPEC: {}; PLAYER CLASS: {}", plrSpec, plrClass);
+        LOG_INFO("module", "                enchMask: {}", enchCatMask);
+        LOG_INFO("module", "                attrMask: {}", attrMask);
+        LOG_INFO("module", ">>>>> RANDOM_ENCHANT DEBUG PRINT CHOSEN ITEM SPEC END <<<<<");
     }
-    if (isMeleeStrDPS)
-    {
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrDps.begin(), attributesMeleeStrDps.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrDps.begin(), enchCatsMeleeStrDps.end());
-    }
-    if (isMeleeStrTank)
-    {
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeStrTank.begin(), attributesMeleeStrTank.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeStrTank.begin(), enchCatsMeleeStrTank.end());
-    }
-    if (isMeleeAgiDPS)
-    {
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiDps.begin(), attributesMeleeAgiDps.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiDps.begin(), enchCatsMeleeAgiDps.end());
-    }
-    if (isMeleeAgiTank)
-    {
-        itemAttrs.insert(itemAttrs.end(), attributesMeleeAgiTank.begin(), attributesMeleeAgiTank.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsMeleeAgiTank.begin(), enchCatsMeleeAgiTank.end());
-    }
-    if (isRangedAgi)
-    {
-        itemAttrs.insert(itemAttrs.end(), attributesRangedAgi.begin(), attributesRangedAgi.end());
-        itmEnchCats.insert(itmEnchCats.end(), enchCatsRangedAgi.begin(), enchCatsRangedAgi.end());
-    }
-    return retVals{getEnchantCategoryMask(itmEnchCats), getAttributeMask(itemAttrs)};
+    return retVals{enchCatMask, attrMask, true};
 }
 
 auto getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
 {
     struct retVals {
         uint32 enchCatMask, attrMask;
+        bool found;
     };
     if (config_roll_player_class_preference && player->CanUseItem(item, false) == EQUIP_ERR_OK)
     {
@@ -678,14 +1090,14 @@ auto getPlayerItemEnchantCategoryMask(Item* item, Player* player = nullptr)
             LOG_INFO("module", "RANDOM_ENCHANT: Getting player class preference for enchant category");
         }
         auto [enchMask, attrMask] = getPlayerEnchantCategoryMask(player);
-        return retVals{enchMask, attrMask};
+        return retVals{enchMask, attrMask, true};
     }
     if (config_debug)
     {
         LOG_INFO("module", "RANDOM_ENCHANT: Getting item enchant category");
     }
-    auto [enchMask, attrMask] = getItemEnchantCategoryMask(item);
-    return retVals{enchMask, attrMask};
+    auto [enchMask, attrMask, found] = getItemEnchantCategoryMask(item);
+    return retVals{enchMask, attrMask, found};
 }
 
 // END UTILS
@@ -698,7 +1110,10 @@ int32 getCustomRandomSuffix(int enchantQuality, Item* item, Player* player = nul
     uint32 subclassMask = 1 << item->GetTemplate()->SubClass;
     // int level = getLevelOffset(item, player);
     int level = getItemPlayerLevel(item);
-    auto [enchantCategoryMask, attrMask] = getPlayerItemEnchantCategoryMask(item, player);
+    auto [enchantCategoryMask, attrMask, found] = getPlayerItemEnchantCategoryMask(item, player);
+    if (!found) {
+        return -1;
+    }
 
     int maxCount = 50;
     while (maxCount > 0)
@@ -747,7 +1162,11 @@ AND (
                     }
                 }
             }
-            auto suffFactor = GenerateEnchSuffixFactor(item->GetTemplate()->ItemId); 
+            auto suffFactor = GenerateEnchSuffixFactor(item->GetTemplate()->ItemId);
+            if (config_debug)
+            {
+                LOG_INFO("module", "RANDOM_ENCHANT: Suffix factor for item {}, Item ID is: {} is {}", item->GetTemplate()->Name1, item->GetTemplate()->ItemId, suffFactor);
+            }
             int32 basepoints = int32(minAllocPct * suffFactor / 10000);
             if (basepoints < 1)
             {
