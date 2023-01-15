@@ -804,7 +804,7 @@ void RollPossibleEnchant(Player* player, Item* item)
         case INVTYPE_TABARD:
         case INVTYPE_AMMO:
         case INVTYPE_QUIVER:
-        case INVTYPE_RELIC:
+        // case INVTYPE_RELIC: // core changes will allow enchants of relics as well
             return;
     }
     if (
