@@ -534,7 +534,7 @@ auto itemRoleRoleCheckToClassSpecs_Shaman(itemPotentialRoleCheck rc, bool forceA
     }
     if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isAgi) {
         specPool.insert({TALENT_TREE_SHAMAN_ENHANCEMENT});
-    } else if (isCaster) {
+    } else if (rc.isCaster) {
         specPool.insert({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
     } else if (forceAddAll) {
         specPool.insert({TALENT_TREE_SHAMAN_ENHANCEMENT,TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
