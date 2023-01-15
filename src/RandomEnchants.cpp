@@ -142,10 +142,6 @@ int getLevelOffset(Item* item, Player* player = nullptr)
     }
     return level;
 }
-auto getPlayerEnchantCategoryMask(Player* player)
-{
-    return getEnchantCategoryMaskByClassAndSpec(player->getClass(), player->GetSpec(player->GetActiveSpec()));
-}
 
 auto getEnchantCategoryMaskByClassAndSpec(uint8 plrClass, uint32 plrSpec)
 {
@@ -290,6 +286,11 @@ auto getEnchantCategoryMaskByClassAndSpec(uint8 plrClass, uint32 plrSpec)
         uint32 enchCatMask, attrMask;
     };
     return retVals{getEnchantCategoryMask(plrEnchCats), getAttributeMask(plrAttrs)};
+}
+
+auto getPlayerEnchantCategoryMask(Player* player)
+{
+    return getEnchantCategoryMaskByClassAndSpec(player->getClass(), player->GetSpec(player->GetActiveSpec()));
 }
 
 std::unordered_map<uint32, uint8> specToClass = {
