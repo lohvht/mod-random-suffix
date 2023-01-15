@@ -421,6 +421,7 @@ auto getItemPotentialRoles(Item* item)
                 continue;
         }
     }
+    // TODO: Get DefenseRating equip check
     return r;
 }
 
@@ -532,7 +533,7 @@ auto itemRoleRoleCheckToClassSpecs_Shaman(itemPotentialRoleCheck rc, bool forceA
         }
         return specPool;
     }
-    if (rc.isMelee || rc.isPhysDPS || rc.isStr || rc.isAgi) {
+    if (rc.isAgi || (!rc.isStr && (rc.isMelee || rc.isPhysDPS))) {
         specPool.insert({TALENT_TREE_SHAMAN_ENHANCEMENT});
     } else if (rc.isCaster) {
         specPool.insert({TALENT_TREE_SHAMAN_ELEMENTAL,TALENT_TREE_SHAMAN_RESTORATION});
@@ -574,7 +575,7 @@ auto itemRoleRoleCheckToClassSpecs_Druid(itemPotentialRoleCheck rc, bool forceAd
         }
         return specPool;
     }
-    if (rc.isTank || rc.isStr || rc.isPhysDPS || rc.isMelee || rc.isAgi) {
+    if (rc.isTank || rc.isAgi || (!rc.isStr && (rc.isMelee || rc.isPhysDPS))) {
         specPool.insert({TALENT_TREE_DRUID_FERAL_COMBAT});
     } else if (rc.isCaster) {
         specPool.insert({TALENT_TREE_DRUID_BALANCE,TALENT_TREE_DRUID_RESTORATION});
