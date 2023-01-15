@@ -936,7 +936,6 @@ auto getItemEnchantCategoryMask(Item* item)
                     break;
                 case ITEM_SUBCLASS_WEAPON_SPEAR:
                 case ITEM_SUBCLASS_WEAPON_obsolete:
-                case ITEM_SUBCLASS_WEAPON_STAFF:
                 case ITEM_SUBCLASS_WEAPON_EXOTIC:
                 case ITEM_SUBCLASS_WEAPON_EXOTIC2:
                 case ITEM_SUBCLASS_WEAPON_MISC:
