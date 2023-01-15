@@ -326,6 +326,39 @@ std::unordered_map<uint32, uint8> specToClass = {
     {TALENT_TREE_DRUID_RESTORATION,     CLASS_DRUID},
 };
 
+std::unordered_map<uint32, std::string> specToSpecNames = {
+    {TALENT_TREE_WARRIOR_ARMS,          "WARRIOR_ARMS"},
+    {TALENT_TREE_WARRIOR_FURY,          "WARRIOR_FURY"},
+    {TALENT_TREE_WARRIOR_PROTECTION,    "WARRIOR_PROTECTION"},
+    {TALENT_TREE_PALADIN_HOLY,          "PALADIN_HOLY"},
+    {TALENT_TREE_PALADIN_PROTECTION,    "PALADIN_PROTECTION"},
+    {TALENT_TREE_PALADIN_RETRIBUTION,   "PALADIN_RETRIBUTION"},
+    {TALENT_TREE_HUNTER_BEAST_MASTERY,  "HUNTER_BEAST_MASTERY"},
+    {TALENT_TREE_HUNTER_MARKSMANSHIP,   "HUNTER_MARKSMANSHIP"},
+    {TALENT_TREE_HUNTER_SURVIVAL,       "HUNTER_SURVIVAL"},
+    {TALENT_TREE_ROGUE_ASSASSINATION,   "ROGUE_ASSASSINATION"},
+    {TALENT_TREE_ROGUE_COMBAT,          "ROGUE_COMBAT"},
+    {TALENT_TREE_ROGUE_SUBTLETY,        "ROGUE_SUBTLETY"},
+    {TALENT_TREE_PRIEST_DISCIPLINE,     "PRIEST_DISCIPLINE"},
+    {TALENT_TREE_PRIEST_HOLY,           "PRIEST_HOLY"},
+    {TALENT_TREE_PRIEST_SHADOW,         "PRIEST_SHADOW"},
+    {TALENT_TREE_DEATH_KNIGHT_BLOOD,    "DEATH_KNIGHT_BLOOD"},
+    {TALENT_TREE_DEATH_KNIGHT_FROST,    "DEATH_KNIGHT_FROST"},
+    {TALENT_TREE_DEATH_KNIGHT_UNHOLY,   "DEATH_KNIGHT_UNHOLY"},
+    {TALENT_TREE_SHAMAN_ELEMENTAL,      "SHAMAN_ELEMENTAL"},
+    {TALENT_TREE_SHAMAN_ENHANCEMENT,    "SHAMAN_ENHANCEMENT"},
+    {TALENT_TREE_SHAMAN_RESTORATION,    "SHAMAN_RESTORATION"},
+    {TALENT_TREE_MAGE_ARCANE,           "MAGE_ARCANE"},
+    {TALENT_TREE_MAGE_FIRE,             "MAGE_FIRE"},
+    {TALENT_TREE_MAGE_FROST,            "MAGE_FROST"},
+    {TALENT_TREE_WARLOCK_AFFLICTION,    "WARLOCK_AFFLICTION"},
+    {TALENT_TREE_WARLOCK_DEMONOLOGY,    "WARLOCK_DEMONOLOGY"},
+    {TALENT_TREE_WARLOCK_DESTRUCTION,   "WARLOCK_DESTRUCTION"},
+    {TALENT_TREE_DRUID_BALANCE,         "DRUID_BALANCE"},
+    {TALENT_TREE_DRUID_FERAL_COMBAT,    "DRUID_FERAL_COMBAT"},
+    {TALENT_TREE_DRUID_RESTORATION,     "DRUID_RESTORATION"},
+};
+
 typedef struct itemPotentialRoleCheck {
     bool isRanged;
     bool isMelee;
@@ -1037,7 +1070,11 @@ auto getItemEnchantCategoryMask(Item* item)
         LOG_INFO("module", "       >>> Printing candidate specs");
         std::ostringstream stream;
         for (auto s : specPool) {
-            stream << std::to_string(s) << ",";
+            auto specName = std::to_string(s);
+            if (auto found = specToSpecNames.find(s); found != specToSpecNames.end()) {
+                specName = found->second;
+            }
+            stream << specName << ",";
         }
         std::string result = stream.str();
         LOG_INFO("module", "                candidate_specs = [{}]", result);
