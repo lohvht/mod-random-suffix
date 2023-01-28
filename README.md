@@ -9,7 +9,22 @@ https://github.com/azerothcore/azerothcore-wotlk/</b>
 
 This module adds in more random custom suffixes and includes a system where all items can roll these new custom random suffixes. This module began as a mere fork of the original [mod-random-enchants](https://github.com/azerothcore/mod-random-enchants) with more hardcoded enchants but grew to one where random custom suffixes with actual stat calculations being shown on the clientside.
 
-It taps on several patches on both the server-side and client-side to get `ItemRandomSuffix.dbc` to show meaningful stats shown when looking at items items in-game (i.e. proper stat calculation via allocation points), as well as actual suffix names on items.
+__Below are some pictures of what this module does__
+
+| Item with original stats | Item in-game w/ a rolled suffix |
+| ------------------------ | ------------------------------- |
+| ![](docs/images/original_item_stats.png) |  ![](docs/images/item_stats_w_suffix.png)     |
+
+
+__Suffix correctly rendering in chat__
+
+![](docs/images/valid_item_linking_in_chat.png)
+
+__Meaningful stat comparisons (i.e. showing correct diffs when shift clicking an item)__
+
+![](docs/images/meaningful_stat_comparisons.png)
+
+This module works by tapping on several patches for both the server-side (Azerothcore) and client-side (WoW game client) to get `ItemRandomSuffix.dbc` to show meaningful stats shown when looking at items items in-game (i.e. proper stat calculation via allocation points), as well as actual suffix names on items.
 
 ## Important Note
 This module also makes use of client patching and modification. It is recommended to use a [clean unmodified enUS WoW client](https://www.chromiecraft.com/en/downloads/). A patcher for the WoW client is provided under the `patcher-WoWClient` folder taken from this [forum link](https://model-changing.net/index.php?app=downloads&module=downloads&controller=view&id=314&tab=details) which will remove signature checks, allowing for us to include custom suffixes with names and correct stat calculations on the WoW client side. Do keep a backup of the unmodified client just in case.
