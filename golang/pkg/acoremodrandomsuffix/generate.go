@@ -7,6 +7,7 @@ package acoremodrandomsuffix
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 
 	"github.com/lohvht/mod-random-suffix/golang/pkg/dbc"
@@ -188,7 +189,16 @@ func Generate(p *ProcessedConfig) error {
 		}
 	}
 
-	for enchID, ws := range p.WeaponSuffixes {
+	weaponEnchantIDs := make([]int32, 0, len(p.WeaponSuffixes))
+	for enchID := range p.WeaponSuffixes {
+		weaponEnchantIDs = append(weaponEnchantIDs, enchID)
+	}
+	sort.Slice(weaponEnchantIDs, func(i, j int) bool { return weaponEnchantIDs[i] < weaponEnchantIDs[j] })
+	for _, enchID := range weaponEnchantIDs {
+		ws, ok := p.WeaponSuffixes[enchID]
+		if !ok {
+			log.Panic("Weapon suffix iteration, enchant ID not found even if weaponSuffixes should have this ID", "enchID", enchID)
+		}
 		// Base
 		enchIDs := []int32{enchID}
 		allocPcts := []int32{1}
