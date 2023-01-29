@@ -37,12 +37,13 @@ type Config struct {
 	DstGeneratedItemSuffixDBC       string `yaml:"dst-generated-item-suffix-dbc"`
 	DstGeneratedSpellItemEnchantDBC string `yaml:"dst-generated-spell-item-enchant-dbc"`
 	// Generate configuration
-	NumberOfAttributes        int                    `yaml:"number-of-attributes"`
-	NumberOfAttributesWeapons int                    `yaml:"number-of-attributes-weapons"`
-	StatPointAllocTiers       []int                  `yaml:"stat-point-alloc-tiers"`
-	WeaponStatPenalty         float64                `yaml:"weapon-stat-penalty"`
-	Suffixes                  map[string]Attributes  `yaml:"suffixes"`
-	WeaponSuffixes            map[int32]WeaponSuffix `yaml:"weaponsuffixes"`
+	ItemRandomSuffixDBCCustomStartID int32                  `yaml:"item-random-suffix-dbc-custom-start-id"`
+	NumberOfAttributes               int                    `yaml:"number-of-attributes"`
+	NumberOfAttributesWeapons        int                    `yaml:"number-of-attributes-weapons"`
+	StatPointAllocTiers              []int                  `yaml:"stat-point-alloc-tiers"`
+	WeaponStatPenalty                float64                `yaml:"weapon-stat-penalty"`
+	Suffixes                         map[string]Attributes  `yaml:"suffixes"`
+	WeaponSuffixes                   map[int32]WeaponSuffix `yaml:"weaponsuffixes"`
 }
 
 // ProcessFromReader processes the suffix generation config from a reader and spits out a processed config
@@ -80,6 +81,7 @@ func (c *Config) ProcessFromReader(cfgfile io.Reader) (*ProcessedConfig, error) 
 		DstGeneratedWorldSQL:                    dstWorldSQL,
 		DstExportedGeneratedItemSuffixDBC:       dstIrsDBC,
 		DstExportedGeneratedSpellItemEnchantDBC: dstSieDBC,
+		ItemRandomSuffixDBCCustomStartID:        c.ItemRandomSuffixDBCCustomStartID,
 		NumberOfAttributes:                      c.NumberOfAttributes,
 		NumberOfAttributesWeapons:               c.NumberOfAttributesWeapons,
 		StatPointAllocTiers:                     c.StatPointAllocTiers,
@@ -101,12 +103,13 @@ type ProcessedConfig struct {
 	DstExportedGeneratedItemSuffixDBC       io.WriteSeeker
 	DstExportedGeneratedSpellItemEnchantDBC io.WriteSeeker
 	// Generate configuration
-	NumberOfAttributes        int
-	NumberOfAttributesWeapons int
-	StatPointAllocTiers       []int
-	WeaponStatPenalty         float64
-	Suffixes                  map[string]Attributes
-	WeaponSuffixes            map[int32]WeaponSuffix
+	ItemRandomSuffixDBCCustomStartID int32
+	NumberOfAttributes               int
+	NumberOfAttributesWeapons        int
+	StatPointAllocTiers              []int
+	WeaponStatPenalty                float64
+	Suffixes                         map[string]Attributes
+	WeaponSuffixes                   map[int32]WeaponSuffix
 
 	// generated from Suffixes to check duplicates
 	suffixMaskToNames map[uint]string `yaml:"-"`

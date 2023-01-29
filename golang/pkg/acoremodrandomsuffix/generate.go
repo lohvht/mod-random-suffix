@@ -153,8 +153,7 @@ func Generate(p *ProcessedConfig) error {
 		irsDBCCSVHeader = append(irsDBCCSVHeader, p.SrcItemSuffixDBC.Schema.FieldName(fi))
 	}
 	var suffEntries []customRandomSuffixEntry
-	irsDBCstartID := int32(1000)
-	irsDBCID := irsDBCstartID
+	irsDBCID := p.ItemRandomSuffixDBCCustomStartID
 	seenNames := make(map[string]struct{})
 	for i := 0; i < p.NumberOfAttributes; i++ {
 		combis := generateAttributeCombinations(i+1, allAttributes)
@@ -284,7 +283,7 @@ func Generate(p *ProcessedConfig) error {
 		tmplRanSuffEntries = append(tmplRanSuffEntries, e.toTmplSQLEntry())
 	}
 	sqlData := tmplData{
-		CustomItemRandomSuffixStartID:     irsDBCstartID,
+		CustomItemRandomSuffixStartID:     p.ItemRandomSuffixDBCCustomStartID,
 		CustomItemRandomSuffixEndID:       irsDBCID,
 		CustomItemRandomSuffixEntries:     tmplRanSuffEntries,
 		CustomSpellItemEnchantmentEntries: tmplSpellItemEnchEntries,

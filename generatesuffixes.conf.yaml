@@ -19,6 +19,7 @@ src-item-suffix-schema: golang/data/3.3.5.12340/schemas/ItemRandomSuffix.dbc.jso
 src-spell-item-enchant-dbc: ../../env/docker/data/dbc/SpellItemEnchantment.dbc
 src-spell-item-enchant-schema: golang/data/3.3.5.12340/schemas/SpellItemEnchantment.dbc.json
 
+item-random-suffix-dbc-custom-start-id: 1000          # Custom ItemRandomSuffixDBC entries start from 1000. can refer to your DBC viewer for more info on this.
 number-of-attributes: 3                               # number of attribute per combination, e.g. if 3, then cannot have more than 3 diff attrs for each generated suffix
 number-of-attributes-weapons: 1                       # same as above, but for weapons
 stat-point-alloc-tiers: [10000, 12000, 14000, 16000]
