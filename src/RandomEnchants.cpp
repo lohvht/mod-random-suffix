@@ -127,7 +127,7 @@ int getLevelOffset(Item* item, Player* player = nullptr)
     int level = 1;
     if (player)
     {
-        level = player->getLevel();
+        level = player->GetLevel();
     }
     else
     {
