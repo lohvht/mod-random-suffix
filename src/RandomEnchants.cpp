@@ -6,6 +6,7 @@
 #include "Configuration/Config.h"
 #include "Chat.h"
 #include "Item.h"
+#include "ItemEnchantmentMgr.h"
 
 // DEFAULT VALUES
 
