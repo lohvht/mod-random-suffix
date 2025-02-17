@@ -630,6 +630,7 @@ auto getItemEnchantCategoryMask(Item* item)
     auto isc = item->GetTemplate()->SubClass;
     auto ivt = item->GetTemplate()->InventoryType;
     // ITEM CLASS + SUB CLASS - ARMOUR
+    bool isCONSUMABLE = false;
     bool isCloth = false;
     bool isLeather = false;
     bool isMail = false;
@@ -666,7 +667,37 @@ auto getItemEnchantCategoryMask(Item* item)
         case ITEM_CLASS_ARMOR:
             switch (isc)
             {
-                case ITEM_SUBCLASS_ARMOR_CLOTH:
+            case  ITEM_SUBCLASS_CONSUMABLE:
+                isCONSUMABLE = true;
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                if (itemPlayerLevel > 40) {
+                    if (specPool.empty()) {
+                        // todo.
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Rogue(r, false, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Druid(r, false, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Mage(r, true, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warlock(r, true, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Hunter(r, false, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Shaman(r, false, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_DeathKnight(r, false, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Paladin(r, false, ic, isc, ivt));
+                        specPool.merge(itemRoleRoleCheckToClassSpecs_Warrior(r, false, ic, isc, ivt));
+                    }
+                    // todo
+                    break;
+                }
+
+            case ITEM_SUBCLASS_ARMOR_CLOTH:
                     isCloth = ivt != INVTYPE_CLOAK;
                     if (isCloth) {
                         specPool.merge(itemRoleRoleCheckToClassSpecs_Priest(r, true, ic, isc, ivt));
@@ -1156,7 +1187,7 @@ int32 getCustomRandomSuffix(int enchantQuality, Item* item, Player* player = nul
     int maxCount = 50;
     while (maxCount > 0)
     {
-    QueryResult qr = WorldDatabase.Query(R"(SELECT ID FROM item_enchantment_random_suffixes
+        QueryResult qr = WorldDatabase.Query(R"(SELECT ID FROM item_enchantment_random_suffixes
 INNER JOIN itemrandomsuffix_dbc ON
 item_enchantment_random_suffixes.SuffixID = itemrandomsuffix_dbc.ID
 WHERE
@@ -1187,6 +1218,7 @@ AND (
                 maxCount--;
                 continue;
             }
+
             uint32 minAllocPct = 3567587328;
             for (uint8 k = 0; k != MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
             {
@@ -1261,11 +1293,12 @@ void RollPossibleEnchant(Player* player, Item* item)
         case INVTYPE_TABARD:
         case INVTYPE_AMMO:
         case INVTYPE_QUIVER:
-        // case INVTYPE_RELIC: // core changes will allow enchants of relics as well
+        case INVTYPE_RELIC: // core changes will allow enchants of relics as well
+        // case INVTYPE_RELIC: // core changes will allow enchants of relics as well (строчка примера)
             return;
     }
     if (
-        (Quality > ITEM_QUALITY_LEGENDARY || Quality < ITEM_QUALITY_UNCOMMON) /* eliminates enchanting anything that isn't a recognized quality */ ||
+        (Quality > ITEM_QUALITY_EPIC || Quality < ITEM_QUALITY_UNCOMMON) /* eliminates enchanting anything that isn't a recognized quality */ ||
         (Class != ITEM_CLASS_WEAPON && Class != ITEM_CLASS_ARMOR) /* eliminates enchanting anything but weapons/armor */)
     {
         return;
@@ -1298,7 +1331,7 @@ void RollPossibleEnchant(Player* player, Item* item)
     ChatHandler chathandle = ChatHandler(player->GetSession());
     uint32 loc = player->GetSession()->GetSessionDbLocaleIndex();
     std::string suffixName = item_rand->Name[loc];
-    chathandle.PSendSysMessage("|cffFF0000 %s |rhas rolled the suffix|cffFF0000 %s |r!", item->GetTemplate()->Name1.c_str(), suffixName);
+    //chathandle.PSendSysMessage("|cffFF0000 %s |rhas rolled the suffix|cffFF0000 %s |r!", item->GetTemplate()->Name1.c_str(), suffixName);
 }
 
 // END MAIN GET ROLL ENCHANTS FUNCTIONS
@@ -1332,36 +1365,36 @@ public:
 
     RandomEnchantsPlayer() : PlayerScript("RandomEnchantsPlayer") { }
 
-    void OnLogin(Player* player) override {
+    void OnPlayerLogin(Player* player) override {
         if (config_announce_on_log)
         {
             ChatHandler(player->GetSession()).SendSysMessage(config_login_message);
         }
     }
-    void OnStoreNewItem(Player* player, Item* item, uint32 /*count*/) override
+    void OnPlayerStoreNewItem(Player* player, Item* item, uint32 /*count*/) override
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_loot)
 
             RollPossibleEnchant(player, item);
     }
-    void OnCreateItem(Player* player, Item* item, uint32 /*count*/) override
+    void OnPlayerCreateItem(Player* player, Item* item, uint32 /*count*/) override
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_create)
             RollPossibleEnchant(player, item);
     }
-    void OnQuestRewardItem(Player* player, Item* item, uint32 /*count*/) override
+    void OnPlayerQuestRewardItem(Player* player, Item* item, uint32 /*count*/) override
     {
         if(/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_quest_reward)
             RollPossibleEnchant(player, item);
     }
-    void OnGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/) override
+    void OnPlayerGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/, Roll* /*roll*/) override
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_group_roll_reward_item)
         {
             RollPossibleEnchant(player, item);
         }
     }
-    void OnAfterStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, Item* item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) override
+    void OnPlayerAfterStoreOrEquipNewItem(Player* player, uint32 /*vendorslot*/, Item* item, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) override
     {
         if (/*!HasBeenTouchedByRandomEnchantMod(item) && */config_on_vendor_purchase)
         {
